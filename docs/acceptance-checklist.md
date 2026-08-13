@@ -15,6 +15,11 @@ person must exercise browser chrome.
   last-accessed tab, then identifies the previous visit.
 - [x] The new-tab adapter prefers `BrowserCommands.openTab()` and falls back to
   `cmd_newNavigatorTabNoEvent`.
+- [x] Homepage derivation removes path/query/fragment and credentials, preserves
+  HTTP(S) scheme and non-default ports, unwraps Reader View/view-source, and
+  rejects special non-web buckets.
+- [x] Homepage tabs use Firefox's trusted-tab API, open in the foreground, and
+  preserve the source tab's container when present.
 - [x] All shipped JavaScript passes Node syntax checking.
 - [x] All PowerShell files pass the PowerShell parser.
 - [x] Installer `-WhatIf` detects Firefox 153.0.4 and the correct current profile
@@ -45,13 +50,18 @@ person must exercise browser chrome.
 
 ## Needs a live Firefox restart smoke test
 
+Focused isolated Firefox probes have verified exact-host rendering, an adjacent
+new-tab button with overflow scrolling, singleton-count hiding, Home-before-count
+placement, and foreground Home navigation to the origin root. The remaining
+broader manual checks are:
+
 - [ ] Restored session renders and the native strip disappears only after the
   custom strip appears.
 - [ ] Window drag, double-click maximize, caption controls, restored/maximized
   layouts, and F11 fullscreen behave normally.
-- [ ] Host title/count/close controls, long-title page panel, outside/Escape
-  close, and panel clamping look correct under the active Firefox theme and
-  Windows scaling.
+- [ ] Host title/Home/count/close controls, long-title page panel,
+  outside/Escape close, and panel clamping look correct across Firefox themes
+  and Windows scaling values.
 - [ ] Ctrl+T/W/Shift+T/N/Shift+N/Tab/PageUp/PageDown, Alt+Left/Right, Ctrl+L,
   F6, and F11 remain native.
 - [ ] Dynamic navigation migrates a row between hosts, including while its
@@ -65,5 +75,5 @@ person must exercise browser chrome.
 - [ ] Install, repair after an update, and uninstall are exercised on a test
   profile before relying on them for the main profile.
 
-The repository does not claim the live items above were tested during its
-creation. They require modifying an installed Firefox and restarting it.
+These remaining items require broader manual interaction with an installed,
+visible Firefox rather than focused automation in an isolated profile.

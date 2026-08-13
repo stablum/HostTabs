@@ -5,34 +5,51 @@ hostname → pages projection in the normal top tab area. The underlying objects
 remain real Firefox tabs.
 
 ```text
-[ (r) Third page title  ⌂ 3 × ] [ (g) HostTabs  ⌂ × ] [ + ]
-                │ count (hidden when it is 1)
-              └─ www.reddit.com
-                 ├─ Why Firefox extensions can no longer…   /r/firefox/…
-                 ├─ Mozilla discussion concerning…          /r/programming/…
-                 └─ Third page title                         /comments/…
+[ favicon | last page title | Home | 3 | × ] [ favicon | only page title | Home | × ] [ + ]
+                                   │
+                                   └─ page list for that exact hostname
 ```
 
 The exact hostname remains the grouping key and panel heading; the compact bar
-uses the site's favicon and the most recently accessed page title.
+uses the site's favicon and the most recently accessed page title. The page
+count is omitted when only one page is open.
 
-Version 0.1.7 targets and was source-verified against the Firefox installed on
+Version 0.1.8 targets and was source-verified against the Firefox installed on
 the development machine: desktop Firefox 153.0.4 on Windows 11.
 
-## What it does
+## Host-tab controls
+
+Each web-host tab is arranged as:
+
+```text
+[ favicon + last-accessed page title ] [ Home ] [ page count ] [ × ]
+```
+
+| Control | Behavior |
+| --- | --- |
+| Favicon and title | For an inactive host, activates its most recently accessed page without opening the list. For the active host, toggles its page list. |
+| Home | Opens the last-accessed page's origin root (for example, `https://example.com/`) in a selected new tab. The scheme, non-default port, and Firefox container are preserved. It is omitted from special non-web groups. |
+| Page count | Shows the page list. It is omitted when the group contains one page. |
+| `×` | Closes the current page in the active host, or the last-accessed page in an inactive host. Repeated clicks keep the button in place and work backward through recent pages. |
+| `+` | Opens Firefox's standard New Tab page. It stays immediately after the host tabs while the host strip scrolls independently when crowded. |
+
+The page list shows each real tab's title and path plus its favicon, container,
+pin, and audio state where applicable. In the list:
+
+- click or press **Enter**/**Space** to activate a page;
+- press **Arrow Up/Down**, **Home**, or **End** to move focus;
+- click `×`, middle-click a row, or press **Delete** to close a page;
+- Ctrl+click a row to toggle Firefox's real multi-selection;
+- right-click a row for Firefox's native tab context menu;
+- drag a row onto another row to reorder the underlying tabs;
+- press **Escape**, click the panel close button, or click outside to dismiss it.
+
+## Behavior and compatibility
 
 - groups HTTP(S) tabs by exact hostname (`www.reddit.com` and
   `old.reddit.com` stay separate);
-- puts compact site-favicon and last-page-title controls in `TabsToolbar`;
-- activates the most recently accessed page when an inactive hostname title is
-  clicked, without opening a menu;
-- toggles the vertical page list from the count, or from the title when that
-  hostname is already active;
-- hides the page counter for single-page groups and places a home button before
-  it that opens the hostname root in a new tab;
-- provides a stable hostname close button that closes the current page, or the
-  most recently accessed page in an inactive group, then promotes the previous
-  visit for repeated cleanup clicks;
+- places the host controls in Firefox's normal `TabsToolbar` without removing
+  Firefox View, All Tabs, title-bar spacers, or window controls;
 - derives all order and state from each window's own real `gBrowser.tabs`;
 - migrates a row automatically when its real tab navigates to another host;
 - preserves Firefox shortcuts, session restore, history, pinned state,
@@ -198,7 +215,7 @@ but a future Firefox update can require maintenance. See
 [`docs/firefox-internals.md`](docs/firefox-internals.md) for the exact installed
 revision and findings, and run diagnostics/repair after upgrades.
 
-Version 0.1.7 limitations:
+Version 0.1.8 limitations:
 
 - it intentionally fails open when Firefox's built-in vertical-tabs mode is
   active; disable vertical tabs to use the requested top-toolbar interface;
@@ -209,15 +226,18 @@ Version 0.1.7 limitations:
 - if native context-menu invocation breaks, the fallback includes reload,
   mute, pin, duplicate, close, and Move Tab to New Window, but not every native
   extension-contributed or move-to-existing-window item;
-- automated logic/static/tooling checks were run, but browser-chrome behavior
-  was not claimed as live-tested without installing and restarting Firefox.
+- focused live Firefox probes cover host grouping, control placement, the
+  adjacent `+` button, overflow scrolling, singleton-count hiding, and Home
+  navigation. The broader manual GUI scenarios listed below remain unchecked.
 
 The manual smoke-test status is explicit in
 [`docs/acceptance-checklist.md`](docs/acceptance-checklist.md).
 
 ## Privacy
 
-HostTabs makes no network requests, includes no telemetry or remote code, does
-not inject into websites, and stores no browsing history. Only the live set of
-open real tabs exists in runtime memory. The sole optional persisted setting is
+HostTabs makes no background network requests, includes no telemetry or remote
+code, and does not inject into websites. The Home button only asks Firefox to
+perform the navigation you clicked; normal Firefox networking and history then
+apply. HostTabs itself stores no browsing history. Only the live set of open
+real tabs exists in runtime memory, and the sole optional persisted setting is
 the local `hosttabs.debug` preference.

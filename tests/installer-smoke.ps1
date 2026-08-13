@@ -42,8 +42,14 @@ try {
     & (Join-Path $repositoryRoot 'scripts\install.ps1') `
         -FirefoxPath $fakeExe -ProfilePath $fakeProfile -Confirm:$false
 
-    & (Join-Path $repositoryRoot 'scripts\diagnose.ps1') `
-        -FirefoxPath $fakeExe -ProfilePath $fakeProfile | Out-Null
+    # Invoke diagnostics as a standalone process as documented. PowerShell's
+    # automatic preference variables behave differently at a -File boundary.
+    $diagnosticOutput = & pwsh -NoProfile -File `
+        (Join-Path $repositoryRoot 'scripts\diagnose.ps1') `
+        -FirefoxPath $fakeExe -ProfilePath $fakeProfile 2>&1
+    if ($LASTEXITCODE -ne 0) {
+        throw "Standalone diagnostic command failed:`n$($diagnosticOutput -join [Environment]::NewLine)"
+    }
 
     $repairTarget = Join-Path $fakeProfile 'chrome\hosttabs\model.js'
     Remove-Item -LiteralPath $repairTarget -Force

@@ -26,11 +26,11 @@ $missingSources = @($expectedSources | Where-Object {
 })
 $cssPath = Join-Path $hostTabsRoot 'hosttabs.css'
 $prefsPath = Join-Path $profile 'prefs.js'
-$debugPreference = 'default (false)'
+$hostTabsDebugSetting = 'default (false)'
 if (Test-Path -LiteralPath $prefsPath) {
     $debugLine = Select-String -LiteralPath $prefsPath -Pattern 'user_pref\("hosttabs\.debug",\s*(true|false)\)' -AllMatches
     if ($debugLine) {
-        $debugPreference = $debugLine.Matches[-1].Groups[1].Value
+        $hostTabsDebugSetting = $debugLine.Matches[-1].Groups[1].Value
     }
 }
 $manifest = $null
@@ -65,7 +65,7 @@ $report = [ordered]@{
     'general.config.sandbox_enabled'      = $sandboxPreference
     'HostTabs source present'            = ($missingSources.Count -eq 0)
     'HostTabs CSS present'               = Test-Path -LiteralPath $cssPath -PathType Leaf
-    'hosttabs.debug preference'          = $debugPreference
+    'hosttabs.debug preference'          = $hostTabsDebugSetting
     'Existing AutoConfig conflict'       = $autoConfig.HasConflict
     'Installation manifest present'      = [bool]$manifest
     'Installed HostTabs version'         = if ($manifest) { $manifest.hostTabsVersion } else { '(unknown)' }

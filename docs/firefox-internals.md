@@ -104,17 +104,20 @@ Firefox's tab element exposes `lastAccessed`, which is updated during native
 tab selection and carries restored-session access information. HostTabs uses
 that value to choose the real tab activated by an inactive hostname-title
 click and to display that page's title/favicon. Clicking the active hostname
-title toggles its page list instead; the count always toggles the list. The
-currently selected tab wins if a timestamp is unavailable.
+title toggles its page list instead; the count toggles the list and is hidden
+for single-page groups. The currently selected tab wins if a timestamp is
+unavailable. For HTTP(S) groups, the Home control derives the origin root from
+that same tab and opens it through Firefox's trusted-tab API, preserving a
+non-default port and the source tab's container.
 
 The hostname close control closes that active tab, or the last-accessed tab for
 an inactive hostname. When it closes the active tab, HostTabs explicitly
 selects the next-most-recent tab in the same group immediately before Firefox's
 native `removeTab` call. This prevents Firefox from transiently selecting—and
 marking as recently accessed—a neighboring hostname. While the pointer stays
-over the close control, the group keeps its toolbar position and fixed-width
-count slot so repeated clicks do not move the target; native-position ordering
-resumes when the pointer leaves.
+over the close control, the group keeps its toolbar position and width so
+repeated clicks do not move the target; native-position ordering resumes when
+the pointer leaves.
 
 ## Native tab context menu
 
