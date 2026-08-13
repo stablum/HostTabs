@@ -13,6 +13,8 @@ person must exercise browser chrome.
 - [x] Group and page ordering derives only from native tab positions.
 - [x] Hostname close planning selects the active tab or the inactive group's
   last-accessed tab, then identifies the previous visit.
+- [x] The new-tab adapter prefers `BrowserCommands.openTab()` and falls back to
+  `cmd_newNavigatorTabNoEvent`.
 - [x] All shipped JavaScript passes Node syntax checking.
 - [x] All PowerShell files pass the PowerShell parser.
 - [x] Installer `-WhatIf` detects Firefox 153.0.4 and the correct current profile
@@ -36,6 +38,8 @@ person must exercise browser chrome.
 - [x] Tab lifecycle/attribute/progress events used by reconciliation.
 - [x] Real tab activation, close, position, pin, audio, multi-select, and move
   APIs are present.
+- [x] Firefox's current no-event new-tab command delegates to
+  `BrowserCommands.openTab()`.
 - [x] `#tabContextMenu` derives `contextTab` from `triggerNode.tab` and retains
   the native Move Tab / Move to New Window commands.
 

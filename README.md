@@ -5,25 +5,29 @@ hostname → pages projection in the normal top tab area. The underlying objects
 remain real Firefox tabs.
 
 ```text
-[ www.reddit.com  3 ] [ github.com  1 ] [ en.wikipedia.org  1 ] [ + ]
-          │
-          └─ www.reddit.com
-             ├─ Why Firefox extensions can no longer…   /r/firefox/…
-             ├─ Mozilla discussion concerning…          /r/programming/…
-             └─ Third page title                         /comments/…
+[ (r) Third page title  3 × ] [ (g) HostTabs  1 × ] [ + ]
+              │ count
+              └─ www.reddit.com
+                 ├─ Why Firefox extensions can no longer…   /r/firefox/…
+                 ├─ Mozilla discussion concerning…          /r/programming/…
+                 └─ Third page title                         /comments/…
 ```
 
-Version 0.1.4 targets and was source-verified against the Firefox installed on
+The exact hostname remains the grouping key and panel heading; the compact bar
+uses the site's favicon and the most recently accessed page title.
+
+Version 0.1.5 targets and was source-verified against the Firefox installed on
 the development machine: desktop Firefox 153.0.4 on Windows 11.
 
 ## What it does
 
 - groups HTTP(S) tabs by exact hostname (`www.reddit.com` and
   `old.reddit.com` stay separate);
-- puts hostname buttons in `TabsToolbar` and opens pages vertically on demand;
-- activates the most recently accessed page in a hostname group when its
-  button is clicked;
-- opens the vertical page list only from the hostname's count button;
+- puts compact site-favicon and last-page-title controls in `TabsToolbar`;
+- activates the most recently accessed page when an inactive hostname title is
+  clicked, without opening a menu;
+- toggles the vertical page list from the count, or from the title when that
+  hostname is already active;
 - provides a stable hostname close button that closes the current page, or the
   most recently accessed page in an inactive group, then promotes the previous
   visit for repeated cleanup clicks;
@@ -192,7 +196,7 @@ but a future Firefox update can require maintenance. See
 [`docs/firefox-internals.md`](docs/firefox-internals.md) for the exact installed
 revision and findings, and run diagnostics/repair after upgrades.
 
-Version 0.1.4 limitations:
+Version 0.1.5 limitations:
 
 - it intentionally fails open when Firefox's built-in vertical-tabs mode is
   active; disable vertical tabs to use the requested top-toolbar interface;

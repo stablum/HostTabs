@@ -42,6 +42,11 @@ caption button container. Firefox's `.browser-titlebar` supplies
 `no-drag` and leaves its empty flex area draggable. Source:
 [browser-shared.css](https://hg.mozilla.org/releases/mozilla-release/file/54be19de0e08edff0b797e55fd935dd3978b0a6d/browser/themes/shared/browser-shared.css#l338).
 
+The custom `+` delegates to `BrowserCommands.openTab()`. Firefox 153 maps the
+explicit no-event command `cmd_newNavigatorTabNoEvent` to that same method, so
+HostTabs uses it as the compatibility fallback instead of the event-dependent
+`cmd_newNavigatorTab`: [browser-sets.js](https://hg.mozilla.org/releases/mozilla-release/file/54be19de0e08edff0b797e55fd935dd3978b0a6d/browser/base/content/browser-sets.js).
+
 Native-strip suppression is a stylesheet rule guarded by the runtime
 `hosttabs-active` root class. The controller adds that class only after markup,
 listeners, tab enumeration, and the initial render all succeed. `destroy()`
@@ -97,7 +102,9 @@ Events are coalesced into one animation-frame reconciliation.
 
 Firefox's tab element exposes `lastAccessed`, which is updated during native
 tab selection and carries restored-session access information. HostTabs uses
-that value to choose the real tab activated by a hostname-button click; the
+that value to choose the real tab activated by an inactive hostname-title
+click and to display that page's title/favicon. Clicking the active hostname
+title toggles its page list instead; the count always toggles the list. The
 currently selected tab wins if a timestamp is unavailable.
 
 The hostname close control closes that active tab, or the last-accessed tab for

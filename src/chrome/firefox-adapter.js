@@ -132,8 +132,12 @@
     }
 
     newTab() {
+      if (typeof this.win.BrowserCommands?.openTab === "function") {
+        this.win.BrowserCommands.openTab();
+        return;
+      }
       if (typeof this.win.goDoCommand === "function") {
-        this.win.goDoCommand("cmd_newNavigatorTab");
+        this.win.goDoCommand("cmd_newNavigatorTabNoEvent");
         return;
       }
       throw new Error("Firefox new-tab command is unavailable");

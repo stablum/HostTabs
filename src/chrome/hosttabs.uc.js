@@ -222,21 +222,25 @@
       const name = html(this.doc, "span", "hosttabs-group-name");
       const main = html(this.doc, "button", "hosttabs-group-main");
       main.type = "button";
+      main.setAttribute("aria-haspopup", "dialog");
+      main.setAttribute("aria-controls", "hosttabs-panel");
       main.append(icon, name);
 
       const count = html(this.doc, "button", "hosttabs-group-count");
       count.type = "button";
       count.setAttribute("aria-haspopup", "dialog");
       count.setAttribute("aria-controls", "hosttabs-panel");
+      const countValue = html(this.doc, "span", "hosttabs-group-count-value");
+      count.appendChild(countValue);
 
       const close = html(this.doc, "button", "hosttabs-group-close");
       close.type = "button";
       close.textContent = "×";
 
       group.append(main, count, close);
-      group._hosttabs = { main, icon, name, count, close };
+      group._hosttabs = { main, icon, name, count, countValue, close };
 
-      main.addEventListener("click", () => this.activateGroup(label));
+      main.addEventListener("click", () => this.activateGroup(label, main));
       main.addEventListener("auxclick", event => {
         if (event.button === 1) {
           event.preventDefault();
@@ -258,8 +262,12 @@
       return group;
     }
 
-    activateGroup(label) {
+    activateGroup(label, button) {
       const group = this.groups.find(candidate => candidate.label === label);
+      if (group?.active) {
+        this.togglePanel(label, button);
+        return;
+      }
       const record = group?.lastAccessedTab || group?.tabs[0];
       if (record && !record.active) {
         this.adapter.activateTab(record.tab);
@@ -299,13 +307,16 @@
 
     updateGroupButton(button, group) {
       const count = group.tabs.length;
-      button._hosttabs.name.textContent = group.label;
-      button._hosttabs.count.textContent = String(count);
+      const pageTitle = group.lastAccessedTab?.title || group.label;
+      button._hosttabs.name.textContent = pageTitle;
+      button._hosttabs.countValue.textContent = String(count);
       button.setAttribute("aria-label", group.label);
-      button._hosttabs.main.title = `Open the last accessed ${group.label} page`;
+      button._hosttabs.main.title = `${pageTitle} — ${group.label}`;
       button._hosttabs.main.setAttribute(
         "aria-label",
-        `${group.label}, open the last accessed page`
+        group.active
+          ? `${group.label}, ${pageTitle}, show open tabs`
+          : `${group.label}, ${pageTitle}, open the last accessed page`
       );
       button._hosttabs.count.title = `Show ${count} open ${count === 1 ? "tab" : "tabs"}`;
       button._hosttabs.count.setAttribute(
@@ -316,6 +327,10 @@
         "aria-expanded",
         String(this.openGroup === group.label)
       );
+      button._hosttabs.main.setAttribute(
+        "aria-expanded",
+        String(this.openGroup === group.label)
+      );
       button._hosttabs.close.title = group.active
         ? `Close the current ${group.label} page`
         : `Close the last accessed ${group.label} page`;
@@ -323,9 +338,10 @@
       button.classList.toggle("is-active", group.active);
 
       const icon = button._hosttabs.icon;
-      if (group.favicon) {
-        if (icon.src !== group.favicon) {
-          icon.src = group.favicon;
+      const favicon = group.lastAccessedTab?.favicon || group.favicon;
+      if (favicon) {
+        if (icon.src !== favicon) {
+          icon.src = favicon;
         }
         icon.hidden = false;
       } else {
@@ -592,6 +608,7 @@
       this.openingButton = null;
       for (const groupButton of this.groupButtons.values()) {
         groupButton._hosttabs.count.setAttribute("aria-expanded", "false");
+        groupButton._hosttabs.main.setAttribute("aria-expanded", "false");
       }
       if (returnFocus) {
         button?.focus();

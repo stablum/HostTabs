@@ -70,9 +70,12 @@
 .hosttabs-group {
   display: inline-flex;
   flex: 0 0 auto;
+  align-self: stretch;
   align-items: center;
   gap: 0;
   max-width: 220px;
+  min-height: 0;
+  margin-block: 0;
   padding: 0;
   overflow: hidden;
 }
@@ -153,10 +156,19 @@
 
 .hosttabs-group-count {
   flex: 0 0 3.2em;
+  align-self: stretch;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   width: 3.2em;
-  height: 22px;
-  margin-inline: 2px;
-  padding: 1px 5px;
+  min-height: 0;
+  padding: 0 2px;
+}
+
+.hosttabs-group-count-value {
+  display: block;
+  width: 100%;
+  padding: 1px 3px;
   border-radius: 999px;
   background: color-mix(in srgb, currentColor 12%, transparent);
   overflow: hidden;
@@ -167,14 +179,15 @@
   font-variant-numeric: tabular-nums;
 }
 
-.hosttabs-group-count:hover {
+.hosttabs-group-count:hover .hosttabs-group-count-value {
   background: color-mix(in srgb, currentColor 20%, transparent);
 }
 
 .hosttabs-group-close {
   flex: 0 0 24px;
+  align-self: stretch;
   width: 24px;
-  height: 24px;
+  height: auto;
   margin-inline-end: 3px;
   padding: 0;
   border-radius: 4px;
@@ -190,7 +203,10 @@
 
 .hosttabs-new-tab {
   flex: 0 0 34px;
+  align-self: stretch;
   width: 34px;
+  min-height: 0;
+  margin-block: 0;
   padding: 0;
   font-size: 20px;
   line-height: 1;
