@@ -95,6 +95,11 @@ The controller also listens for pin/unpin, session restore, insertion, and uses
 `addTabsProgressListener().onLocationChange` for immediate hostname migration.
 Events are coalesced into one animation-frame reconciliation.
 
+Firefox's tab element exposes `lastAccessed`, which is updated during native
+tab selection and carries restored-session access information. HostTabs uses
+that value to choose the real tab activated by a hostname-button click; the
+currently selected tab wins if a timestamp is unavailable.
+
 ## Native tab context menu
 
 The current menu is `#tabContextMenu` in

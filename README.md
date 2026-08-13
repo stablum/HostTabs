@@ -13,7 +13,7 @@ remain real Firefox tabs.
              └─ Third page title                         /comments/…
 ```
 
-Version 0.1.2 targets and was source-verified against the Firefox installed on
+Version 0.1.3 targets and was source-verified against the Firefox installed on
 the development machine: desktop Firefox 153.0.4 on Windows 11.
 
 ## What it does
@@ -21,6 +21,8 @@ the development machine: desktop Firefox 153.0.4 on Windows 11.
 - groups HTTP(S) tabs by exact hostname (`www.reddit.com` and
   `old.reddit.com` stay separate);
 - puts hostname buttons in `TabsToolbar` and opens pages vertically on demand;
+- activates the most recently accessed page in a hostname group when its
+  button is clicked;
 - derives all order and state from each window's own real `gBrowser.tabs`;
 - migrates a row automatically when its real tab navigates to another host;
 - preserves Firefox shortcuts, session restore, history, pinned state,
@@ -186,7 +188,7 @@ but a future Firefox update can require maintenance. See
 [`docs/firefox-internals.md`](docs/firefox-internals.md) for the exact installed
 revision and findings, and run diagnostics/repair after upgrades.
 
-Version 0.1.2 limitations:
+Version 0.1.3 limitations:
 
 - it intentionally fails open when Firefox's built-in vertical-tabs mode is
   active; disable vertical tabs to use the requested top-toolbar interface;

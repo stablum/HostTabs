@@ -73,6 +73,16 @@
       return Number.isInteger(tab._tPos) ? tab._tPos : this.getAllTabs().indexOf(tab);
     }
 
+    getTabLastAccessed(tab) {
+      try {
+        const timestamp = Number(tab.lastAccessed);
+        return Number.isFinite(timestamp) ? timestamp : 0;
+      } catch (error) {
+        this.log.debug("Could not read when a tab was last accessed", error);
+        return 0;
+      }
+    }
+
     getContainerInfo(tab) {
       const rawId = tab.getAttribute?.("usercontextid");
       const userContextId = Number.parseInt(rawId || "0", 10);
@@ -103,6 +113,7 @@
         title: this.getTabTitle(tab),
         favicon: this.getTabFavicon(tab),
         position: this.getTabPosition(tab),
+        lastAccessed: this.getTabLastAccessed(tab),
         active: tab === this.gBrowser.selectedTab,
         pinned: Boolean(tab.pinned || tab.hasAttribute?.("pinned")),
         muted: Boolean(tab.muted || tab.hasAttribute?.("muted")),

@@ -213,7 +213,7 @@
       button.append(icon, name, count);
       button._hosttabs = { icon, name, count };
 
-      button.addEventListener("click", () => this.togglePanel(label, button));
+      button.addEventListener("click", () => this.activateGroup(label, button));
       button.addEventListener("auxclick", event => {
         if (event.button === 1) {
           event.preventDefault();
@@ -225,6 +225,15 @@
         }
       });
       return button;
+    }
+
+    activateGroup(label, button) {
+      const group = this.groups.find(candidate => candidate.label === label);
+      const record = group?.lastAccessedTab || group?.tabs[0];
+      if (record && !record.active) {
+        this.adapter.activateTab(record.tab);
+      }
+      this.togglePanel(label, button);
     }
 
     updateGroupButton(button, group) {

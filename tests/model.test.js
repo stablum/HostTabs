@@ -37,3 +37,53 @@ test("navigation changes grouping without changing tab positions", () => {
   assert.equal(groups[0].label, "mozilla.org");
   assert.deepEqual(groups[0].tabs.map(tab => tab.position), [0, 1]);
 });
+
+test("groups retain the most recently accessed real tab", () => {
+  const records = [
+    {
+      id: "older",
+      position: 0,
+      url: "https://example.com/older",
+      lastAccessed: 100,
+      active: false,
+    },
+    {
+      id: "recent",
+      position: 1,
+      url: "https://example.com/recent",
+      lastAccessed: 300,
+      active: false,
+    },
+    {
+      id: "middle",
+      position: 2,
+      url: "https://example.com/middle",
+      lastAccessed: 200,
+      active: false,
+    },
+  ];
+
+  const [group] = buildGroups(records);
+  assert.equal(group.lastAccessedTab.id, "recent");
+});
+
+test("the active tab is the group's last-accessed fallback", () => {
+  const records = [
+    {
+      id: "restored",
+      position: 0,
+      url: "https://example.com/restored",
+      lastAccessed: 500,
+      active: false,
+    },
+    {
+      id: "active",
+      position: 1,
+      url: "https://example.com/active",
+      active: true,
+    },
+  ];
+
+  const [group] = buildGroups(records);
+  assert.equal(group.lastAccessedTab.id, "active");
+});
