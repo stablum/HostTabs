@@ -30,7 +30,7 @@
 
 .hosttabs-strip {
   display: flex;
-  flex: 1 1 auto;
+  flex: 0 1 auto;
   align-items: center;
   gap: 3px;
   min-width: 0;
