@@ -5,8 +5,8 @@ hostname → pages projection in the normal top tab area. The underlying objects
 remain real Firefox tabs.
 
 ```text
-[ (r) Third page title  3 × ] [ (g) HostTabs  1 × ] [ + ]
-              │ count
+[ (r) Third page title  ⌂ 3 × ] [ (g) HostTabs  ⌂ × ] [ + ]
+                │ count (hidden when it is 1)
               └─ www.reddit.com
                  ├─ Why Firefox extensions can no longer…   /r/firefox/…
                  ├─ Mozilla discussion concerning…          /r/programming/…
@@ -16,7 +16,7 @@ remain real Firefox tabs.
 The exact hostname remains the grouping key and panel heading; the compact bar
 uses the site's favicon and the most recently accessed page title.
 
-Version 0.1.6 targets and was source-verified against the Firefox installed on
+Version 0.1.7 targets and was source-verified against the Firefox installed on
 the development machine: desktop Firefox 153.0.4 on Windows 11.
 
 ## What it does
@@ -28,6 +28,8 @@ the development machine: desktop Firefox 153.0.4 on Windows 11.
   clicked, without opening a menu;
 - toggles the vertical page list from the count, or from the title when that
   hostname is already active;
+- hides the page counter for single-page groups and places a home button before
+  it that opens the hostname root in a new tab;
 - provides a stable hostname close button that closes the current page, or the
   most recently accessed page in an inactive group, then promotes the previous
   visit for repeated cleanup clicks;
@@ -196,7 +198,7 @@ but a future Firefox update can require maintenance. See
 [`docs/firefox-internals.md`](docs/firefox-internals.md) for the exact installed
 revision and findings, and run diagnostics/repair after upgrades.
 
-Version 0.1.6 limitations:
+Version 0.1.7 limitations:
 
 - it intentionally fails open when Firefox's built-in vertical-tabs mode is
   active; disable vertical tabs to use the requested top-toolbar interface;

@@ -143,6 +143,31 @@
       throw new Error("Firefox new-tab command is unavailable");
     }
 
+    openURLInNewTab(url, sourceTab) {
+      const options = {
+        inBackground: false,
+        relatedToCurrent: true,
+      };
+      const userContextId = Number.parseInt(
+        sourceTab?.getAttribute?.("usercontextid") || "0",
+        10
+      );
+      if (userContextId) {
+        options.userContextId = userContextId;
+      }
+
+      if (typeof this.gBrowser.addTrustedTab === "function") {
+        const tab = this.gBrowser.addTrustedTab(url, options);
+        this.gBrowser.selectedTab = tab;
+        return;
+      }
+      if (typeof this.win.openTrustedLinkIn === "function") {
+        this.win.openTrustedLinkIn(url, "tab", options);
+        return;
+      }
+      throw new Error("Firefox trusted new-tab navigation is unavailable");
+    }
+
     reloadTab(tab) {
       this.gBrowser.reloadTab(tab);
     }

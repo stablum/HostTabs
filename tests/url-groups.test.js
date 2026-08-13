@@ -5,7 +5,11 @@ const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
 const vm = require("node:vm");
-const { getGroupForURL, getSecondaryText } = require("../src/chrome/url-groups.js");
+const {
+  getGroupForURL,
+  getSecondaryText,
+  getHomepageURL,
+} = require("../src/chrome/url-groups.js");
 
 const cases = [
   ["https://www.reddit.com/foo", "www.reddit.com"],
@@ -47,6 +51,37 @@ test("malformed secondary text is safe", () => {
   assert.equal(getSecondaryText("%%%"), "%%%");
 });
 
+test("homepage URL removes path, query, fragment, and credentials", () => {
+  assert.equal(
+    getHomepageURL("https://user:secret@example.com/a/path?q=1#part"),
+    "https://example.com/"
+  );
+});
+
+test("homepage URL preserves scheme and non-default port", () => {
+  assert.equal(
+    getHomepageURL("http://localhost:8123/a/path"),
+    "http://localhost:8123/"
+  );
+});
+
+test("homepage URL unwraps Reader View and view-source URLs", () => {
+  assert.equal(
+    getHomepageURL("view-source:https://example.com/a/path"),
+    "https://example.com/"
+  );
+  assert.equal(
+    getHomepageURL("about:reader?url=https%3A%2F%2Fdeveloper.mozilla.org%2Fdocs"),
+    "https://developer.mozilla.org/"
+  );
+});
+
+test("special buckets do not expose a homepage URL", () => {
+  assert.equal(getHomepageURL("about:config"), "");
+  assert.equal(getHomepageURL("file:///C:/foo/bar.html"), "");
+  assert.equal(getHomepageURL("not a url"), "");
+});
+
 test("Firefox privileged runtime uses Services.io when DOM URL is unavailable", () => {
   const source = fs.readFileSync(
     path.join(__dirname, "../src/chrome/url-groups.js"),
@@ -60,6 +95,7 @@ test("Firefox privileged runtime uses Services.io when DOM URL is unavailable", 
           return {
             scheme: parsed.protocol.slice(0, -1),
             host: parsed.hostname,
+            hostPort: parsed.host,
             pathQueryRef: `${parsed.pathname}${parsed.search}${parsed.hash}`,
           };
         },
@@ -85,5 +121,9 @@ test("Firefox privileged runtime uses Services.io when DOM URL is unavailable", 
   assert.equal(
     context.HostTabs.getSecondaryText("https://www.youtube.com/watch?v=abc#player"),
     "/watch?v=abc#player"
+  );
+  assert.equal(
+    context.HostTabs.getHomepageURL("https://localhost:8123/watch?v=abc"),
+    "https://localhost:8123/"
   );
 });

@@ -36,6 +36,7 @@
       return {
         protocol: scheme ? `${scheme}:` : "",
         hostname: safeURIProperty(uri, "host"),
+        hostPort: safeURIProperty(uri, "hostPort"),
         pathQueryRef: safeURIProperty(uri, "pathQueryRef"),
       };
     }
@@ -47,6 +48,7 @@
     return {
       protocol: parsed.protocol,
       hostname: parsed.hostname,
+      hostPort: parsed.host,
       pathQueryRef: `${parsed.pathname || ""}${parsed.search}${parsed.hash}`,
     };
   }
@@ -151,5 +153,34 @@
     return spec;
   }
 
-  return { getGroupForURL, getSecondaryText };
+  function getHomepageURL(value) {
+    const spec = normalizedSpec(value);
+    if (!spec) {
+      return "";
+    }
+
+    const lower = spec.toLowerCase();
+    if (lower.startsWith("view-source:")) {
+      return getHomepageURL(spec.slice("view-source:".length));
+    }
+    if (lower.startsWith("about:reader")) {
+      const source = getReaderSource(spec);
+      return source ? getHomepageURL(source) : "";
+    }
+
+    try {
+      const parsed = parseURL(spec);
+      if (
+        (parsed.protocol === "http:" || parsed.protocol === "https:") &&
+        parsed.hostname
+      ) {
+        return `${parsed.protocol}//${parsed.hostPort || parsed.hostname}/`;
+      }
+    } catch (_) {
+      // Special and malformed URLs do not have a web homepage.
+    }
+    return "";
+  }
+
+  return { getGroupForURL, getSecondaryText, getHomepageURL };
 });

@@ -3,6 +3,7 @@
 
   root.HostTabs = root.HostTabs || {};
   const HTML_NS = "http://www.w3.org/1999/xhtml";
+  const SVG_NS = "http://www.w3.org/2000/svg";
 
   function html(doc, name, className = "") {
     const element = doc.createElementNS(HTML_NS, name);
@@ -233,12 +234,24 @@
       const countValue = html(this.doc, "span", "hosttabs-group-count-value");
       count.appendChild(countValue);
 
+      const home = html(this.doc, "button", "hosttabs-group-home");
+      home.type = "button";
+      const homeIcon = this.doc.createElementNS(SVG_NS, "svg");
+      homeIcon.classList.add("hosttabs-group-home-icon");
+      homeIcon.setAttribute("viewBox", "0 0 16 16");
+      homeIcon.setAttribute("aria-hidden", "true");
+      homeIcon.setAttribute("focusable", "false");
+      const homePath = this.doc.createElementNS(SVG_NS, "path");
+      homePath.setAttribute("d", "M8 1.4 1.5 6.8V14h4V9.5h5V14h4V6.8L8 1.4Z");
+      homeIcon.appendChild(homePath);
+      home.appendChild(homeIcon);
+
       const close = html(this.doc, "button", "hosttabs-group-close");
       close.type = "button";
       close.textContent = "×";
 
-      group.append(main, count, close);
-      group._hosttabs = { main, icon, name, count, countValue, close };
+      group.append(main, home, count, close);
+      group._hosttabs = { main, icon, name, home, count, countValue, close };
 
       main.addEventListener("click", () => this.activateGroup(label, main));
       main.addEventListener("auxclick", event => {
@@ -246,6 +259,7 @@
           event.preventDefault();
         }
       });
+      home.addEventListener("click", () => this.openGroupHomepage(label));
       count.addEventListener("click", () => this.togglePanel(label, count));
       count.addEventListener("keydown", event => {
         if (event.key === "Escape") {
@@ -273,6 +287,17 @@
         this.adapter.activateTab(record.tab);
       }
       this.closePanel();
+    }
+
+    openGroupHomepage(label) {
+      const group = this.groups.find(candidate => candidate.label === label);
+      const source = group?.lastAccessedTab || group?.tabs[0];
+      const homepageURL = root.HostTabs.getHomepageURL(source?.url);
+      if (!homepageURL) {
+        return;
+      }
+      this.closePanel();
+      this.adapter.openURLInNewTab(homepageURL, source.tab);
     }
 
     closeGroupPage(label) {
@@ -308,8 +333,10 @@
     updateGroupButton(button, group) {
       const count = group.tabs.length;
       const pageTitle = group.lastAccessedTab?.title || group.label;
+      const homepageURL = root.HostTabs.getHomepageURL(group.lastAccessedTab?.url);
       button._hosttabs.name.textContent = pageTitle;
       button._hosttabs.countValue.textContent = String(count);
+      button._hosttabs.count.hidden = count === 1;
       button.setAttribute("aria-label", group.label);
       button._hosttabs.main.title = `${pageTitle} — ${group.label}`;
       button._hosttabs.main.setAttribute(
@@ -317,6 +344,14 @@
         group.active
           ? `${group.label}, ${pageTitle}, show open tabs`
           : `${group.label}, ${pageTitle}, open the last accessed page`
+      );
+      button._hosttabs.home.hidden = !homepageURL;
+      button._hosttabs.home.title = homepageURL
+        ? `Open ${homepageURL} in a new tab`
+        : "";
+      button._hosttabs.home.setAttribute(
+        "aria-label",
+        homepageURL ? `${group.label}, open homepage in a new tab` : ""
       );
       button._hosttabs.count.title = `Show ${count} open ${count === 1 ? "tab" : "tabs"}`;
       button._hosttabs.count.setAttribute(
