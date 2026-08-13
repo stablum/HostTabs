@@ -1,0 +1,14 @@
+{
+  "name": "hosttabs",
+  "version": "0.1.0",
+  "private": true,
+  "description": "A privileged Firefox chrome customization that projects real tabs as hostname groups.",
+  "scripts": {
+    "test": "node --test tests/*.test.js",
+    "check": "node --check src/chrome/url-groups.js && node --check src/chrome/model.js && node --check src/chrome/firefox-adapter.js && node --check src/chrome/hosttabs.uc.js && node --check src/chrome/bootstrap.js",
+    "test:installer": "pwsh -NoProfile -File tests/installer-smoke.ps1"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
