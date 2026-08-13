@@ -71,6 +71,11 @@ ships `resource://gre/modules/Services.sys.mjs`. Both bootstrap layers prefer
 that global and retain the module import only as a compatibility fallback for
 older Firefox releases.
 
+The AutoConfig global also does not expose the page-global WHATWG `URL`
+constructor. Runtime URL grouping therefore parses strings with
+`Services.io.newURI`; the pure module retains the standard `URL` constructor as
+a fallback for Node tests and non-Firefox environments.
+
 ## Real-tab model and events
 
 Firefox documents one `gBrowser` per browser window. HostTabs reads

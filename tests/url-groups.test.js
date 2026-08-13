@@ -2,6 +2,9 @@
 
 const test = require("node:test");
 const assert = require("node:assert/strict");
+const fs = require("node:fs");
+const path = require("node:path");
+const vm = require("node:vm");
 const { getGroupForURL, getSecondaryText } = require("../src/chrome/url-groups.js");
 
 const cases = [
@@ -42,4 +45,45 @@ test("HTTP secondary text keeps path, query, and fragment", () => {
 test("malformed secondary text is safe", () => {
   assert.doesNotThrow(() => getSecondaryText("%%%"));
   assert.equal(getSecondaryText("%%%"), "%%%");
+});
+
+test("Firefox privileged runtime uses Services.io when DOM URL is unavailable", () => {
+  const source = fs.readFileSync(
+    path.join(__dirname, "../src/chrome/url-groups.js"),
+    "utf8"
+  );
+  const context = {
+    Services: {
+      io: {
+        newURI(spec) {
+          const parsed = new URL(spec);
+          return {
+            scheme: parsed.protocol.slice(0, -1),
+            host: parsed.hostname,
+            pathQueryRef: `${parsed.pathname}${parsed.search}${parsed.hash}`,
+          };
+        },
+      },
+    },
+    URL: class UnavailableDOMURL {
+      constructor() {
+        throw new Error("DOM URL must not be used in the AutoConfig global");
+      }
+    },
+  };
+
+  vm.runInNewContext(source, context);
+
+  assert.equal(
+    context.HostTabs.getGroupForURL("https://www.reddit.com/?feed=home"),
+    "www.reddit.com"
+  );
+  assert.equal(
+    context.HostTabs.getGroupForURL("https://www.youtube.com/"),
+    "www.youtube.com"
+  );
+  assert.equal(
+    context.HostTabs.getSecondaryText("https://www.youtube.com/watch?v=abc#player"),
+    "/watch?v=abc#player"
+  );
 });

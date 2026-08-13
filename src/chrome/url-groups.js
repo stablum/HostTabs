@@ -1,12 +1,12 @@
 (function (root, factory) {
-  const api = factory();
+  const api = factory(root.Services, root.URL);
   if (typeof module === "object" && module.exports) {
     module.exports = api;
   } else {
     root.HostTabs = root.HostTabs || {};
     Object.assign(root.HostTabs, api);
   }
-})(globalThis, function () {
+})(globalThis, function (services, URLConstructor) {
   "use strict";
 
   const NEW_TAB_URLS = new Set(["about:newtab", "about:blank"]);
@@ -20,10 +20,62 @@
     return nested ? getGroupForURL(nested) : prefix;
   }
 
+  function safeURIProperty(uri, name) {
+    try {
+      return typeof uri[name] === "string" ? uri[name] : "";
+    } catch (_) {
+      // Some nsIURI implementations throw for components they do not have.
+      return "";
+    }
+  }
+
+  function parseURL(spec) {
+    if (services?.io?.newURI) {
+      const uri = services.io.newURI(spec);
+      const scheme = safeURIProperty(uri, "scheme");
+      return {
+        protocol: scheme ? `${scheme}:` : "",
+        hostname: safeURIProperty(uri, "host"),
+        pathQueryRef: safeURIProperty(uri, "pathQueryRef"),
+      };
+    }
+
+    if (typeof URLConstructor !== "function") {
+      throw new TypeError("No URL parser is available");
+    }
+    const parsed = new URLConstructor(spec);
+    return {
+      protocol: parsed.protocol,
+      hostname: parsed.hostname,
+      pathQueryRef: `${parsed.pathname || ""}${parsed.search}${parsed.hash}`,
+    };
+  }
+
+  function getQueryParameter(spec, name) {
+    const queryStart = spec.indexOf("?");
+    if (queryStart < 0) {
+      return null;
+    }
+    const fragmentStart = spec.indexOf("#", queryStart);
+    const query = spec.slice(
+      queryStart + 1,
+      fragmentStart < 0 ? spec.length : fragmentStart
+    );
+    for (const field of query.split("&")) {
+      const separator = field.indexOf("=");
+      const rawName = separator < 0 ? field : field.slice(0, separator);
+      if (decodeURIComponent(rawName.replace(/\+/g, " ")) !== name) {
+        continue;
+      }
+      const rawValue = separator < 0 ? "" : field.slice(separator + 1);
+      return decodeURIComponent(rawValue.replace(/\+/g, " "));
+    }
+    return null;
+  }
+
   function getReaderSource(spec) {
     try {
-      const readerURL = new URL(spec);
-      return readerURL.searchParams.get("url");
+      return getQueryParameter(spec, "url");
     } catch (_) {
       return null;
     }
@@ -48,7 +100,7 @@
     }
 
     try {
-      const parsed = new URL(spec);
+      const parsed = parseURL(spec);
       if ((parsed.protocol === "http:" || parsed.protocol === "https:") && parsed.hostname) {
         return parsed.hostname;
       }
@@ -86,12 +138,12 @@
       return source ? `Reader View · ${getSecondaryText(source)}` : spec;
     }
     try {
-      const parsed = new URL(spec);
+      const parsed = parseURL(spec);
       if (parsed.protocol === "http:" || parsed.protocol === "https:") {
-        return `${parsed.pathname || "/"}${parsed.search}${parsed.hash}`;
+        return parsed.pathQueryRef || "/";
       }
       if (parsed.protocol === "file:") {
-        return decodeURIComponent(parsed.pathname || spec);
+        return decodeURIComponent(parsed.pathQueryRef || spec);
       }
     } catch (_) {
       // The original string is the most useful safe fallback.
