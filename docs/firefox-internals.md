@@ -100,6 +100,15 @@ tab selection and carries restored-session access information. HostTabs uses
 that value to choose the real tab activated by a hostname-button click; the
 currently selected tab wins if a timestamp is unavailable.
 
+The hostname close control closes that active tab, or the last-accessed tab for
+an inactive hostname. When it closes the active tab, HostTabs explicitly
+selects the next-most-recent tab in the same group immediately before Firefox's
+native `removeTab` call. This prevents Firefox from transiently selecting—and
+marking as recently accessed—a neighboring hostname. While the pointer stays
+over the close control, the group keeps its toolbar position and fixed-width
+count slot so repeated clicks do not move the target; native-position ordering
+resumes when the pointer leaves.
+
 ## Native tab context menu
 
 The current menu is `#tabContextMenu` in

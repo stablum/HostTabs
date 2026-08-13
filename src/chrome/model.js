@@ -14,6 +14,37 @@
   "use strict";
   const getGroupForURL = urlApi.getGroupForURL;
 
+  function getLastAccessedTab(tabRecords) {
+    let selected = null;
+    let selectedTimestamp = -1;
+    for (const record of tabRecords) {
+      const timestamp = Number.isFinite(record.lastAccessed)
+        ? record.lastAccessed
+        : -1;
+      if (
+        !selected ||
+        record.active ||
+        (!selected.active && timestamp > selectedTimestamp)
+      ) {
+        selected = record;
+        selectedTimestamp = timestamp;
+      }
+    }
+    return selected;
+  }
+
+  function getGroupClosePlan(group) {
+    const tabs = group?.tabs || [];
+    const target = tabs.find(record => record.active) || getLastAccessedTab(tabs);
+    if (!target) {
+      return { target: null, next: null };
+    }
+    return {
+      target,
+      next: getLastAccessedTab(tabs.filter(record => record !== target)),
+    };
+  }
+
   function buildGroups(tabRecords) {
     const byLabel = new Map();
     const ordered = [...tabRecords].sort((a, b) => a.position - b.position);
@@ -28,7 +59,6 @@
           tabs: [],
           active: false,
           favicon: "",
-          lastAccessed: -1,
           lastAccessedTab: null,
         };
         byLabel.set(label, group);
@@ -36,24 +66,17 @@
       group.tabs.push(record);
       group.position = Math.min(group.position, record.position);
       group.active ||= Boolean(record.active);
-      const lastAccessed = Number.isFinite(record.lastAccessed)
-        ? record.lastAccessed
-        : -1;
-      if (
-        !group.lastAccessedTab ||
-        record.active ||
-        (!group.lastAccessedTab.active && lastAccessed > group.lastAccessed)
-      ) {
-        group.lastAccessed = lastAccessed;
-        group.lastAccessedTab = record;
-      }
       if (!group.favicon && record.favicon) {
         group.favicon = record.favicon;
       }
     }
 
-    return [...byLabel.values()].sort((a, b) => a.position - b.position);
+    const groups = [...byLabel.values()].sort((a, b) => a.position - b.position);
+    for (const group of groups) {
+      group.lastAccessedTab = getLastAccessedTab(group.tabs);
+    }
+    return groups;
   }
 
-  return { buildGroups };
+  return { buildGroups, getLastAccessedTab, getGroupClosePlan };
 });

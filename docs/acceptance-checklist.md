@@ -11,6 +11,8 @@ person must exercise browser chrome.
   other `about:`, file, data, blob, extension, view-source, Reader View, unknown,
   and malformed inputs.
 - [x] Group and page ordering derives only from native tab positions.
+- [x] Hostname close planning selects the active tab or the inactive group's
+  last-accessed tab, then identifies the previous visit.
 - [x] All shipped JavaScript passes Node syntax checking.
 - [x] All PowerShell files pass the PowerShell parser.
 - [x] Installer `-WhatIf` detects Firefox 153.0.4 and the correct current profile
@@ -43,8 +45,9 @@ person must exercise browser chrome.
   custom strip appears.
 - [ ] Window drag, double-click maximize, caption controls, restored/maximized
   layouts, and F11 fullscreen behave normally.
-- [ ] Host buttons, long-title page panel, outside/Escape close, and panel
-  clamping look correct under the active Firefox theme and Windows scaling.
+- [ ] Host title/count/close controls, long-title page panel, outside/Escape
+  close, and panel clamping look correct under the active Firefox theme and
+  Windows scaling.
 - [ ] Ctrl+T/W/Shift+T/N/Shift+N/Tab/PageUp/PageDown, Alt+Left/Right, Ctrl+L,
   F6, and F11 remain native.
 - [ ] Dynamic navigation migrates a row between hosts, including while its

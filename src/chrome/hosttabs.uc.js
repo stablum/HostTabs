@@ -24,6 +24,7 @@
       this.groups = [];
       this.openGroup = null;
       this.openingButton = null;
+      this.closeLockLabel = null;
       this.renderFrame = 0;
       this.destroyed = false;
       this.draggedTab = null;
@@ -178,6 +179,9 @@
 
     renderGroupButtons() {
       const labels = new Set(this.groups.map(group => group.label));
+      if (this.closeLockLabel && !labels.has(this.closeLockLabel)) {
+        this.closeLockLabel = null;
+      }
       for (const [label, button] of this.groupButtons) {
         if (!labels.has(label)) {
           button.remove();
@@ -192,60 +196,130 @@
           this.groupButtons.set(group.label, button);
         }
         this.updateGroupButton(button, group);
-        this.strip.appendChild(button);
+        if (!button.isConnected) {
+          this.strip.appendChild(button);
+        }
+      }
+
+      // Keep the close target under the pointer during a repeated-close run.
+      // Native-order sorting resumes as soon as that close button is left.
+      if (!this.closeLockLabel) {
+        for (const group of this.groups) {
+          this.strip.appendChild(this.groupButtons.get(group.label));
+        }
       }
     }
 
     createGroupButton(label) {
-      const button = html(this.doc, "button", "hosttabs-group");
-      button.type = "button";
-      button.dataset.group = label;
-      button.setAttribute("aria-haspopup", "dialog");
-      button.setAttribute("aria-controls", "hosttabs-panel");
+      const group = html(this.doc, "div", "hosttabs-group");
+      group.dataset.group = label;
+      group.setAttribute("role", "group");
 
       const icon = html(this.doc, "img", "hosttabs-group-icon");
       icon.alt = "";
       icon.setAttribute("role", "presentation");
       icon.addEventListener("error", () => (icon.hidden = true));
       const name = html(this.doc, "span", "hosttabs-group-name");
-      const count = html(this.doc, "span", "hosttabs-group-count");
-      count.setAttribute("aria-hidden", "true");
-      button.append(icon, name, count);
-      button._hosttabs = { icon, name, count };
+      const main = html(this.doc, "button", "hosttabs-group-main");
+      main.type = "button";
+      main.append(icon, name);
 
-      button.addEventListener("click", () => this.activateGroup(label, button));
-      button.addEventListener("auxclick", event => {
+      const count = html(this.doc, "button", "hosttabs-group-count");
+      count.type = "button";
+      count.setAttribute("aria-haspopup", "dialog");
+      count.setAttribute("aria-controls", "hosttabs-panel");
+
+      const close = html(this.doc, "button", "hosttabs-group-close");
+      close.type = "button";
+      close.textContent = "×";
+
+      group.append(main, count, close);
+      group._hosttabs = { main, icon, name, count, close };
+
+      main.addEventListener("click", () => this.activateGroup(label));
+      main.addEventListener("auxclick", event => {
         if (event.button === 1) {
           event.preventDefault();
         }
       });
-      button.addEventListener("keydown", event => {
+      count.addEventListener("click", () => this.togglePanel(label, count));
+      count.addEventListener("keydown", event => {
         if (event.key === "Escape") {
           this.closePanel(true);
         }
       });
-      return button;
+      close.addEventListener("click", () => this.closeGroupPage(label));
+      close.addEventListener("pointerleave", () => this.releaseCloseLock(label));
+      close.addEventListener("blur", () => {
+        if (!close.matches(":hover")) {
+          this.releaseCloseLock(label);
+        }
+      });
+      return group;
     }
 
-    activateGroup(label, button) {
+    activateGroup(label) {
       const group = this.groups.find(candidate => candidate.label === label);
       const record = group?.lastAccessedTab || group?.tabs[0];
       if (record && !record.active) {
         this.adapter.activateTab(record.tab);
       }
-      this.togglePanel(label, button);
+      this.closePanel();
+    }
+
+    closeGroupPage(label) {
+      const group = this.groups.find(candidate => candidate.label === label);
+      const { target, next } = root.HostTabs.getGroupClosePlan(group);
+      if (!target) {
+        return;
+      }
+      if (this.closeLockLabel && this.closeLockLabel !== label) {
+        this.groupButtons.get(this.closeLockLabel)?.style.removeProperty("width");
+      }
+      this.closeLockLabel = label;
+      const groupButton = this.groupButtons.get(label);
+      const lockedWidth = groupButton?.getBoundingClientRect().width;
+      if (lockedWidth) {
+        groupButton.style.width = `${lockedWidth}px`;
+      }
+      if (target.active && next) {
+        this.adapter.activateTab(next.tab);
+      }
+      this.adapter.closeTab(target.tab);
+    }
+
+    releaseCloseLock(label) {
+      if (this.closeLockLabel !== label) {
+        return;
+      }
+      this.groupButtons.get(label)?.style.removeProperty("width");
+      this.closeLockLabel = null;
+      this.scheduleRender("hostname close pointer left");
     }
 
     updateGroupButton(button, group) {
       const count = group.tabs.length;
       button._hosttabs.name.textContent = group.label;
       button._hosttabs.count.textContent = String(count);
-      button.title = group.label;
-      button.setAttribute(
+      button.setAttribute("aria-label", group.label);
+      button._hosttabs.main.title = `Open the last accessed ${group.label} page`;
+      button._hosttabs.main.setAttribute(
         "aria-label",
-        `${group.label}, ${count} open ${count === 1 ? "tab" : "tabs"}`
+        `${group.label}, open the last accessed page`
       );
-      button.setAttribute("aria-expanded", String(this.openGroup === group.label));
+      button._hosttabs.count.title = `Show ${count} open ${count === 1 ? "tab" : "tabs"}`;
+      button._hosttabs.count.setAttribute(
+        "aria-label",
+        `${group.label}, show ${count} open ${count === 1 ? "tab" : "tabs"}`
+      );
+      button._hosttabs.count.setAttribute(
+        "aria-expanded",
+        String(this.openGroup === group.label)
+      );
+      button._hosttabs.close.title = group.active
+        ? `Close the current ${group.label} page`
+        : `Close the last accessed ${group.label} page`;
+      button._hosttabs.close.setAttribute("aria-label", button._hosttabs.close.title);
       button.classList.toggle("is-active", group.active);
 
       const icon = button._hosttabs.icon;
@@ -517,7 +591,7 @@
       this.openGroup = null;
       this.openingButton = null;
       for (const groupButton of this.groupButtons.values()) {
-        groupButton.setAttribute("aria-expanded", "false");
+        groupButton._hosttabs.count.setAttribute("aria-expanded", "false");
       }
       if (returnFocus) {
         button?.focus();
@@ -584,6 +658,7 @@
       this.style?.remove();
       this.groupButtons.clear();
       this.groups = [];
+      this.closeLockLabel = null;
       this.log.info(`Destroyed (${reason}); Firefox native tabs restored`);
       this.onDestroy?.(this);
     }

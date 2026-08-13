@@ -2,7 +2,7 @@
 
 const test = require("node:test");
 const assert = require("node:assert/strict");
-const { buildGroups } = require("../src/chrome/model.js");
+const { buildGroups, getGroupClosePlan } = require("../src/chrome/model.js");
 
 test("groups and pages follow underlying Firefox tab order", () => {
   const records = [
@@ -86,4 +86,66 @@ test("the active tab is the group's last-accessed fallback", () => {
 
   const [group] = buildGroups(records);
   assert.equal(group.lastAccessedTab.id, "active");
+});
+
+test("closing an active group targets its active tab then the previous visit", () => {
+  const records = [
+    {
+      id: "previous",
+      position: 0,
+      url: "https://example.com/previous",
+      lastAccessed: 400,
+      active: false,
+    },
+    {
+      id: "active",
+      position: 1,
+      url: "https://example.com/active",
+      lastAccessed: 100,
+      active: true,
+    },
+    {
+      id: "older",
+      position: 2,
+      url: "https://example.com/older",
+      lastAccessed: 200,
+      active: false,
+    },
+  ];
+
+  const [group] = buildGroups(records);
+  const plan = getGroupClosePlan(group);
+  assert.equal(plan.target.id, "active");
+  assert.equal(plan.next.id, "previous");
+});
+
+test("closing an inactive group targets its last-accessed tab", () => {
+  const records = [
+    {
+      id: "older",
+      position: 0,
+      url: "https://example.com/older",
+      lastAccessed: 100,
+      active: false,
+    },
+    {
+      id: "recent",
+      position: 1,
+      url: "https://example.com/recent",
+      lastAccessed: 300,
+      active: false,
+    },
+    {
+      id: "middle",
+      position: 2,
+      url: "https://example.com/middle",
+      lastAccessed: 200,
+      active: false,
+    },
+  ];
+
+  const [group] = buildGroups(records);
+  const plan = getGroupClosePlan(group);
+  assert.equal(plan.target.id, "recent");
+  assert.equal(plan.next.id, "middle");
 });

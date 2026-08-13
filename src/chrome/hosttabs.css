@@ -47,6 +47,7 @@
 }
 
 .hosttabs-group,
+.hosttabs-group button,
 .hosttabs-new-tab,
 .hosttabs-panel button,
 .hosttabs-fallback-menu button,
@@ -70,14 +71,37 @@
   display: inline-flex;
   flex: 0 0 auto;
   align-items: center;
-  gap: 6px;
+  gap: 0;
   max-width: 220px;
-  padding: 0 9px;
+  padding: 0;
+  overflow: hidden;
+}
+
+.hosttabs-group-main,
+.hosttabs-group-count,
+.hosttabs-group-close {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  -moz-window-dragging: no-drag;
+}
+
+.hosttabs-group-main {
+  display: inline-flex;
+  flex: 1 1 auto;
+  align-self: stretch;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  padding: 0 4px 0 9px;
 }
 
 .hosttabs-group:hover,
 .hosttabs-new-tab:hover,
 .hosttabs-panel-close:hover,
+.hosttabs-group-close:hover,
 .hosttabs-page-close:hover,
 .hosttabs-audio:hover {
   background-color: var(--button-hover-bgcolor, color-mix(in srgb, currentColor 12%, transparent));
@@ -86,6 +110,7 @@
 .hosttabs-group:active,
 .hosttabs-new-tab:active,
 .hosttabs-panel-close:active,
+.hosttabs-group-close:active,
 .hosttabs-page-close:active,
 .hosttabs-audio:active {
   background-color: var(--button-active-bgcolor, color-mix(in srgb, currentColor 20%, transparent));
@@ -99,7 +124,9 @@
   outline-offset: -1px;
 }
 
-.hosttabs-group:focus-visible,
+.hosttabs-group-main:focus-visible,
+.hosttabs-group-count:focus-visible,
+.hosttabs-group-close:focus-visible,
 .hosttabs-new-tab:focus-visible,
 .hosttabs-panel button:focus-visible,
 .hosttabs-page-row:focus-visible,
@@ -117,6 +144,7 @@
 }
 
 .hosttabs-group-name {
+  flex: 1 1 auto;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -124,13 +152,40 @@
 }
 
 .hosttabs-group-count {
-  min-width: 1.4em;
+  flex: 0 0 3.2em;
+  width: 3.2em;
+  height: 22px;
+  margin-inline: 2px;
   padding: 1px 5px;
   border-radius: 999px;
   background: color-mix(in srgb, currentColor 12%, transparent);
+  overflow: hidden;
   text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   font-size: 0.86em;
   font-variant-numeric: tabular-nums;
+}
+
+.hosttabs-group-count:hover {
+  background: color-mix(in srgb, currentColor 20%, transparent);
+}
+
+.hosttabs-group-close {
+  flex: 0 0 24px;
+  width: 24px;
+  height: 24px;
+  margin-inline-end: 3px;
+  padding: 0;
+  border-radius: 4px;
+  opacity: 0.58;
+  font-size: 17px;
+  line-height: 1;
+}
+
+.hosttabs-group-close:hover,
+.hosttabs-group-close:focus-visible {
+  opacity: 1;
 }
 
 .hosttabs-new-tab {
