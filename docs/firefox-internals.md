@@ -66,6 +66,11 @@ The installation-level `hosttabs.cfg` checks the current profile for
 `chrome/hosttabs/bootstrap.js`, so profiles not selected during installation do
 not run HostTabs.
 
+Firefox 153 exposes `Services` directly in privileged globals and no longer
+ships `resource://gre/modules/Services.sys.mjs`. Both bootstrap layers prefer
+that global and retain the module import only as a compatibility fallback for
+older Firefox releases.
+
 ## Real-tab model and events
 
 Firefox documents one `gBrowser` per browser window. HostTabs reads

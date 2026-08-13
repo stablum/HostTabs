@@ -2,9 +2,11 @@
   "use strict";
 
   const { classes: Cc, interfaces: Ci, utils: Cu } = Components;
-  const { Services } = ChromeUtils.importESModule(
-    "resource://gre/modules/Services.sys.mjs"
-  );
+  // Firefox 153 exposes Services as a privileged global and no longer ships
+  // Services.sys.mjs. Keep the import only as a fallback for older releases.
+  const Services =
+    root.Services ||
+    ChromeUtils.importESModule("resource://gre/modules/Services.sys.mjs").Services;
 
   function childFile(parent, ...parts) {
     const file = parent.clone();
