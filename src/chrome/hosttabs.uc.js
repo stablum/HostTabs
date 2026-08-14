@@ -263,7 +263,15 @@
       const icon = html(this.doc, "img", "hosttabs-group-icon");
       icon.alt = "";
       icon.setAttribute("role", "presentation");
-      icon.addEventListener("error", () => (icon.hidden = true));
+      icon.addEventListener("error", () => {
+        icon.hidden = true;
+        group.classList.remove("has-icon");
+        this.win.requestAnimationFrame(() => {
+          if (!this.destroyed) {
+            this.fitGroupTitles();
+          }
+        });
+      });
       const name = html(this.doc, "span", "hosttabs-group-name");
       const main = html(this.doc, "button", "hosttabs-group-main");
       main.type = "button";
@@ -389,6 +397,7 @@
       }
       button._hosttabs.countValue.textContent = String(count);
       button._hosttabs.count.hidden = count === 1;
+      button.classList.toggle("has-count", count > 1);
       button.setAttribute("aria-label", group.label);
       button._hosttabs.main.title = `${pageTitle} — ${group.label}`;
       button._hosttabs.main.setAttribute(
@@ -398,6 +407,7 @@
           : `${group.label}, ${pageTitle}, open the last accessed page`
       );
       button._hosttabs.home.hidden = !homepageURL;
+      button.classList.toggle("has-home", Boolean(homepageURL));
       button._hosttabs.home.title = homepageURL
         ? `Open ${homepageURL} in a new tab`
         : "";
@@ -426,6 +436,7 @@
 
       const icon = button._hosttabs.icon;
       const favicon = group.lastAccessedTab?.favicon || group.favicon;
+      button.classList.toggle("has-icon", Boolean(favicon));
       if (favicon) {
         if (icon.src !== favicon) {
           icon.src = favicon;
@@ -447,10 +458,32 @@
         return;
       }
 
-      for (const button of this.groupButtons.values()) {
+      const buttons = Array.from(this.groupButtons.values()).filter(
+        button => button.isConnected
+      );
+      this.strip.style.removeProperty("flex");
+      for (const button of buttons) {
+        button.style.removeProperty("flex");
+        const name = button._hosttabs.name;
+        name.textContent = name.dataset.fullTitle || "";
+      }
+
+      // Let flexbox distribute the current toolbar width using every full title,
+      // then lock those allocations while replacing the visible title strings.
+      // Otherwise the shortened strings would feed back into flex sizing and
+      // collapse the groups a second time.
+      const allocatedStripWidth = this.strip.getBoundingClientRect().width;
+      const allocatedWidths = buttons.map(
+        button => button.getBoundingClientRect().width
+      );
+      this.strip.style.flex = `0 0 ${allocatedStripWidth}px`;
+      buttons.forEach((button, index) => {
+        button.style.flex = `0 0 ${allocatedWidths[index]}px`;
+      });
+
+      for (const button of buttons) {
         const name = button._hosttabs.name;
         const fullTitle = name.dataset.fullTitle || "";
-        name.textContent = fullTitle;
         const availableWidth = name.clientWidth;
         if (!availableWidth) {
           continue;

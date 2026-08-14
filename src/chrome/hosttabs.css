@@ -68,16 +68,37 @@
 }
 
 .hosttabs-group {
+  --hosttabs-min-icon-width: 0px;
+  --hosttabs-min-home-width: 0px;
+  --hosttabs-min-count-width: 0px;
   display: inline-flex;
-  flex: 0 0 auto;
+  flex: 0 1 auto;
   align-self: stretch;
   align-items: center;
   gap: 0;
+  min-width: calc(
+    56px +
+    var(--hosttabs-min-icon-width) +
+    var(--hosttabs-min-home-width) +
+    var(--hosttabs-min-count-width)
+  );
   max-width: 220px;
   min-height: 0;
   margin-block: 0;
   padding: 0;
   overflow: hidden;
+}
+
+.hosttabs-group.has-icon {
+  --hosttabs-min-icon-width: 22px;
+}
+
+.hosttabs-group.has-home {
+  --hosttabs-min-home-width: 26px;
+}
+
+.hosttabs-group.has-count {
+  --hosttabs-min-count-width: 3.2em;
 }
 
 .hosttabs-group-main,

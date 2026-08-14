@@ -119,6 +119,13 @@ fitting prefix, removes trailing non-alphanumeric characters, and adds one
 period. The full title remains available from the host control's tooltip and
 accessible label.
 
+Each host group participates in flex shrinking from its natural width (capped at
+220 px) to a minimum calculated from its currently visible favicon, Home,
+counter, close control, and a small title allowance. Once flexbox distributes
+the available toolbar width, the controller locks those allocated widths before
+fitting display titles so shortened text cannot cause a second layout collapse.
+The strip scrolls only when the combined control-aware minimums no longer fit.
+
 The hostname close control closes that active tab, or the last-accessed tab for
 an inactive hostname. When it closes the active tab, HostTabs explicitly
 selects the next-most-recent tab in the same group immediately before Firefox's
