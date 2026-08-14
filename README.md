@@ -12,9 +12,11 @@ remain real Firefox tabs.
 
 The exact hostname remains the grouping key and panel heading; the compact bar
 uses the site's favicon and the most recently accessed page title. The page
-count is omitted when only one page is open.
+count is omitted when only one page is open, and a truncated compact title uses
+a single period instead of a wide ellipsis. Spaces and punctuation immediately
+before that period are removed.
 
-Version 0.1.9 targets and was source-verified against the Firefox installed on
+Version 0.1.10 targets and was source-verified against the Firefox installed on
 the development machine: desktop Firefox 153.0.4 on Windows 11.
 
 ## Host-tab controls
@@ -215,7 +217,7 @@ but a future Firefox update can require maintenance. See
 [`docs/firefox-internals.md`](docs/firefox-internals.md) for the exact installed
 revision and findings, and run diagnostics/repair after upgrades.
 
-Version 0.1.9 limitations:
+Version 0.1.10 limitations:
 
 - it intentionally fails open when Firefox's built-in vertical-tabs mode is
   active; disable vertical tabs to use the requested top-toolbar interface;

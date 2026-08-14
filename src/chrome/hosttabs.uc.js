@@ -13,6 +13,38 @@
     return element;
   }
 
+  function truncateTitleToFit(value, fits) {
+    const title = typeof value === "string" ? value : String(value || "");
+    if (!title || fits(title)) {
+      return title;
+    }
+
+    const characters = Array.from(title);
+    const candidateAt = length => {
+      const prefix = characters
+        .slice(0, length)
+        .join("")
+        .replace(/[^\p{L}\p{N}]+$/gu, "");
+      return prefix ? `${prefix}.` : ".";
+    };
+    let best = fits(".") ? "." : "";
+    let low = 0;
+    let high = characters.length;
+    while (low <= high) {
+      const middle = Math.floor((low + high) / 2);
+      const candidate = candidateAt(middle);
+      if (fits(candidate)) {
+        best = candidate;
+        low = middle + 1;
+      } else {
+        high = middle - 1;
+      }
+    }
+    return best;
+  }
+
+  root.HostTabs.truncateTitleToFit = truncateTitleToFit;
+
   class HostTabsController {
     constructor(win, cssText, logger, onDestroy) {
       this.win = win;
@@ -28,13 +60,17 @@
       this.panelPersistent = false;
       this.closeLockLabel = null;
       this.renderFrame = 0;
+      this.titleMeasureContext = null;
       this.destroyed = false;
       this.draggedTab = null;
       this.removeTabListeners = null;
       this.boundOutsidePointer = event => this.onOutsidePointer(event);
       this.boundEscape = event => this.onWindowKeyDown(event);
       this.boundUnload = () => this.destroy("window unload");
-      this.boundResize = () => this.positionPanel();
+      this.boundResize = () => {
+        this.positionPanel();
+        this.fitGroupTitles();
+      };
       this.boundFullscreen = () => this.closePanel();
     }
 
@@ -172,14 +208,18 @@
       }
 
       const activeGroup = this.groups.find(group => group.active);
-      if (activeGroup) {
-        this.win.requestAnimationFrame(() => {
+      this.win.requestAnimationFrame(() => {
+        if (this.destroyed) {
+          return;
+        }
+        this.fitGroupTitles();
+        if (activeGroup) {
           this.groupButtons.get(activeGroup.label)?.scrollIntoView({
             block: "nearest",
             inline: "nearest",
           });
-        });
-      }
+        }
+      });
     }
 
     renderGroupButtons() {
@@ -343,7 +383,10 @@
       const count = group.tabs.length;
       const pageTitle = group.lastAccessedTab?.title || group.label;
       const homepageURL = root.HostTabs.getHomepageURL(group.lastAccessedTab?.url);
-      button._hosttabs.name.textContent = pageTitle;
+      if (button._hosttabs.name.dataset.fullTitle !== pageTitle) {
+        button._hosttabs.name.dataset.fullTitle = pageTitle;
+        button._hosttabs.name.textContent = pageTitle;
+      }
       button._hosttabs.countValue.textContent = String(count);
       button._hosttabs.count.hidden = count === 1;
       button.setAttribute("aria-label", group.label);
@@ -391,6 +434,37 @@
       } else {
         icon.removeAttribute("src");
         icon.hidden = true;
+      }
+    }
+
+    fitGroupTitles() {
+      if (!this.titleMeasureContext) {
+        const canvas = html(this.doc, "canvas");
+        this.titleMeasureContext = canvas.getContext("2d");
+      }
+      const context = this.titleMeasureContext;
+      if (!context) {
+        return;
+      }
+
+      for (const button of this.groupButtons.values()) {
+        const name = button._hosttabs.name;
+        const fullTitle = name.dataset.fullTitle || "";
+        name.textContent = fullTitle;
+        const availableWidth = name.clientWidth;
+        if (!availableWidth) {
+          continue;
+        }
+        const style = this.win.getComputedStyle(name);
+        context.font = style.font || `${style.fontSize} ${style.fontFamily}`;
+        const letterSpacing = Number.parseFloat(style.letterSpacing);
+        const fits = text => {
+          const spacing = Number.isFinite(letterSpacing)
+            ? Math.max(0, Array.from(text).length - 1) * letterSpacing
+            : 0;
+          return context.measureText(text).width + spacing <= availableWidth + 0.25;
+        };
+        name.textContent = truncateTitleToFit(fullTitle, fits);
       }
     }
 
@@ -775,6 +849,7 @@
       this.groups = [];
       this.closeLockLabel = null;
       this.panelPersistent = false;
+      this.titleMeasureContext = null;
       this.log.info(`Destroyed (${reason}); Firefox native tabs restored`);
       this.onDestroy?.(this);
     }

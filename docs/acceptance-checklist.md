@@ -23,6 +23,8 @@ person must exercise browser chrome.
 - [x] Counter hover opens a transient panel, click promotes it to persistent,
   persistent click still toggles closed, and transient pointer-leave handling
   distinguishes the host tab and panel from outside targets.
+- [x] Compact-title truncation uses one period and removes trailing
+  non-alphanumeric characters from the measured fitting prefix.
 - [x] All shipped JavaScript passes Node syntax checking.
 - [x] All PowerShell files pass the PowerShell parser.
 - [x] Installer `-WhatIf` detects Firefox 153.0.4 and the correct current profile

@@ -113,6 +113,12 @@ For HTTP(S) groups, the Home control derives the origin root from that same tab
 and opens it through Firefox's trusted-tab API, preserving a non-default port
 and the source tab's container.
 
+Compact titles are measured after layout rather than relying on the browser's
+ellipsis marker. When truncation is necessary, the controller keeps the longest
+fitting prefix, removes trailing non-alphanumeric characters, and adds one
+period. The full title remains available from the host control's tooltip and
+accessible label.
+
 The hostname close control closes that active tab, or the last-accessed tab for
 an inactive hostname. When it closes the active tab, HostTabs explicitly
 selects the next-most-recent tab in the same group immediately before Firefox's

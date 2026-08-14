@@ -6,18 +6,18 @@ const fs = require("node:fs");
 const path = require("node:path");
 const vm = require("node:vm");
 
-function loadController() {
+function loadHostTabs() {
   const source = fs.readFileSync(
     path.join(__dirname, "../src/chrome/hosttabs.uc.js"),
     "utf8"
   );
   const context = { HostTabs: {} };
   vm.runInNewContext(source, context);
-  return context.HostTabs.HostTabsController;
+  return context.HostTabs;
 }
 
 function controllerStub() {
-  const HostTabsController = loadController();
+  const HostTabsController = loadHostTabs().HostTabsController;
   const controller = Object.create(HostTabsController.prototype);
   controller.openGroup = "example.com";
   controller.openingButton = {};
@@ -40,6 +40,15 @@ function controllerStub() {
   ]);
   return controller;
 }
+
+test("title truncation strips punctuation and spaces before its single period", () => {
+  const { truncateTitleToFit } = loadHostTabs();
+  const fits = value => value.length <= 7;
+
+  assert.equal(truncateTitleToFit("Alpha -------- Omega", fits), "Alpha.");
+  assert.equal(truncateTitleToFit("Already fits", () => true), "Already fits");
+  assert.equal(truncateTitleToFit("Ångström / more", value => value.length <= 9), "Ångström.");
+});
 
 test("hover opens a transient panel but never replaces a persistent panel", () => {
   const controller = controllerStub();
