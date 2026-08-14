@@ -16,7 +16,7 @@ count is omitted when only one page is open, and a truncated compact title uses
 a single period instead of a wide ellipsis. Spaces and punctuation immediately
 before that period are removed.
 
-Version 0.1.11 targets and was source-verified against the Firefox installed on
+Version 0.1.12 targets and was source-verified against the Firefox installed on
 the development machine: desktop Firefox 153.0.4 on Windows 11.
 
 ## Host-tab controls
@@ -36,9 +36,10 @@ Each web-host tab is arranged as:
 | `+` | Opens Firefox's standard New Tab page. It stays immediately after the host tabs while the host strip scrolls independently when crowded. |
 
 Host tabs use their natural content width up to 220 px. As the toolbar fills,
-they shrink proportionally to a control-aware minimum that retains the favicon,
-Home/count/close controls, and a small title marker. Horizontal scrolling starts
-only after the visible host tabs have reached those minimums.
+they share the available title space evenly above a control-aware minimum that
+retains the favicon, Home/count/close controls, and a small title marker. Tabs
+with short complete titles return their unused space to the others. Horizontal
+scrolling starts only after the visible host tabs have reached their minimums.
 
 The page list shows each real tab's title and path plus its favicon, container,
 pin, and audio state where applicable. In the list:
@@ -222,7 +223,7 @@ but a future Firefox update can require maintenance. See
 [`docs/firefox-internals.md`](docs/firefox-internals.md) for the exact installed
 revision and findings, and run diagnostics/repair after upgrades.
 
-Version 0.1.11 limitations:
+Version 0.1.12 limitations:
 
 - it intentionally fails open when Firefox's built-in vertical-tabs mode is
   active; disable vertical tabs to use the requested top-toolbar interface;
@@ -234,7 +235,7 @@ Version 0.1.11 limitations:
   mute, pin, duplicate, close, and Move Tab to New Window, but not every native
   extension-contributed or move-to-existing-window item;
 - focused live Firefox probes cover host grouping, control placement, the
-  adjacent `+` button, adaptive shrinking and minimum-width overflow,
+  adjacent `+` button, fair adaptive shrinking and minimum-width overflow,
   singleton-count hiding, hover-versus-click panel behavior, and Home
   navigation. The broader manual GUI scenarios listed below remain unchecked.
 

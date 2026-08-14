@@ -119,10 +119,12 @@ fitting prefix, removes trailing non-alphanumeric characters, and adds one
 period. The full title remains available from the host control's tooltip and
 accessible label.
 
-Each host group participates in flex shrinking from its natural width (capped at
-220 px) to a minimum calculated from its currently visible favicon, Home,
-counter, close control, and a small title allowance. Once flexbox distributes
-the available toolbar width, the controller locks those allocated widths before
+Each host group has a natural width capped at 220 px and a minimum calculated
+from its currently visible favicon, Home, counter, close control, and a small
+title allowance. When the natural widths do not fit, the controller distributes
+the remaining title allowance equally above each group's control-aware minimum.
+A naturally short group is capped at its full-title width and returns unused
+space to longer groups. The controller locks those fair allocations before
 fitting display titles so shortened text cannot cause a second layout collapse.
 The strip scrolls only when the combined control-aware minimums no longer fit.
 

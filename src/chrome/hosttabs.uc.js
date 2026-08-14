@@ -43,7 +43,63 @@
     return best;
   }
 
+  function allocateGroupWidths(naturalWidths, minimumWidths, availableWidth) {
+    const count = Math.min(naturalWidths.length, minimumWidths.length);
+    if (!count) {
+      return [];
+    }
+
+    const minimums = [];
+    const naturals = [];
+    for (let index = 0; index < count; index += 1) {
+      const minimum = Math.max(0, Number(minimumWidths[index]) || 0);
+      minimums.push(minimum);
+      naturals.push(Math.max(minimum, Number(naturalWidths[index]) || 0));
+    }
+
+    const width = Math.max(0, Number(availableWidth) || 0);
+    const minimumTotal = minimums.reduce((total, value) => total + value, 0);
+    const naturalTotal = naturals.reduce((total, value) => total + value, 0);
+    if (width <= minimumTotal) {
+      return minimums;
+    }
+    if (width >= naturalTotal) {
+      return naturals;
+    }
+
+    // Give every group the same extra title allowance above its own
+    // control-aware minimum. A group whose full title needs less space leaves
+    // its unused share for the remaining groups.
+    const allocations = minimums.slice();
+    let remaining = width - minimumTotal;
+    let flexible = naturals
+      .map((natural, index) => ({ index, capacity: natural - minimums[index] }))
+      .filter(item => item.capacity > 0);
+
+    while (remaining > 0.01 && flexible.length) {
+      const share = remaining / flexible.length;
+      const saturated = flexible.filter(item => item.capacity <= share + 0.01);
+      if (!saturated.length) {
+        for (const item of flexible) {
+          allocations[item.index] += share;
+        }
+        remaining = 0;
+        break;
+      }
+
+      const saturatedIndexes = new Set(saturated.map(item => item.index));
+      for (const item of saturated) {
+        allocations[item.index] += item.capacity;
+        remaining -= item.capacity;
+      }
+      flexible = flexible.filter(item => !saturatedIndexes.has(item.index));
+    }
+
+    return allocations;
+  }
+
   root.HostTabs.truncateTitleToFit = truncateTitleToFit;
+  root.HostTabs.allocateGroupWidths = allocateGroupWidths;
 
   class HostTabsController {
     constructor(win, cssText, logger, onDestroy) {
@@ -463,19 +519,38 @@
       );
       this.strip.style.removeProperty("flex");
       for (const button of buttons) {
-        button.style.removeProperty("flex");
+        button.style.flex = "0 0 auto";
         const name = button._hosttabs.name;
         name.textContent = name.dataset.fullTitle || "";
       }
 
-      // Let flexbox distribute the current toolbar width using every full title,
-      // then lock those allocations while replacing the visible title strings.
-      // Otherwise the shortened strings would feed back into flex sizing and
-      // collapse the groups a second time.
+      // Measure the natural widths without allowing flexbox to favor groups
+      // with longer titles. The strip itself can still shrink beside the +
+      // button, which gives us the exact space available for all groups.
       const allocatedStripWidth = this.strip.getBoundingClientRect().width;
-      const allocatedWidths = buttons.map(
+      const naturalWidths = buttons.map(
         button => button.getBoundingClientRect().width
       );
+      const stripStyle = this.win.getComputedStyle(this.strip);
+      const gap = Number.parseFloat(stripStyle.columnGap || stripStyle.gap) || 0;
+      for (const button of buttons) {
+        button.style.flex = "0 0 0px";
+      }
+      const minimumWidths = buttons.map(
+        button => button.getBoundingClientRect().width
+      );
+      const groupSpace = Math.max(
+        0,
+        allocatedStripWidth - gap * Math.max(0, buttons.length - 1)
+      );
+      const allocatedWidths = allocateGroupWidths(
+        naturalWidths,
+        minimumWidths,
+        groupSpace
+      );
+
+      // Lock the fair allocations before shortening the visible strings so
+      // title fitting cannot feed back into group or strip sizing.
       this.strip.style.flex = `0 0 ${allocatedStripWidth}px`;
       buttons.forEach((button, index) => {
         button.style.flex = `0 0 ${allocatedWidths[index]}px`;

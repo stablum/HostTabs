@@ -50,6 +50,39 @@ test("title truncation strips punctuation and spaces before its single period", 
   assert.equal(truncateTitleToFit("Ångström / more", value => value.length <= 9), "Ångström.");
 });
 
+test("adaptive widths give equally controlled host tabs equal space", () => {
+  const { allocateGroupWidths } = loadHostTabs();
+
+  assert.deepEqual(
+    Array.from(allocateGroupWidths([220, 220, 220], [100, 100, 100], 450)),
+    [150, 150, 150]
+  );
+});
+
+test("adaptive widths redistribute space unused by naturally short tabs", () => {
+  const { allocateGroupWidths } = loadHostTabs();
+
+  assert.deepEqual(
+    Array.from(allocateGroupWidths([120, 220, 220], [100, 100, 100], 400)),
+    [120, 140, 140]
+  );
+});
+
+test("adaptive widths preserve different control minimums and overflow safely", () => {
+  const { allocateGroupWidths } = loadHostTabs();
+  const fair = Array.from(
+    allocateGroupWidths([220, 220, 220], [100, 140, 100], 420)
+  );
+
+  assert.ok(Math.abs(fair[0] - 126.6667) < 0.001);
+  assert.ok(Math.abs(fair[1] - 166.6667) < 0.001);
+  assert.ok(Math.abs(fair[2] - 126.6667) < 0.001);
+  assert.deepEqual(
+    Array.from(allocateGroupWidths([220, 220], [100, 140], 200)),
+    [100, 140]
+  );
+});
+
 test("hover opens a transient panel but never replaces a persistent panel", () => {
   const controller = controllerStub();
   const calls = [];

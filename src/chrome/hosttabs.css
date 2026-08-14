@@ -72,7 +72,7 @@
   --hosttabs-min-home-width: 0px;
   --hosttabs-min-count-width: 0px;
   display: inline-flex;
-  flex: 0 1 auto;
+  flex: 0 0 auto;
   align-self: stretch;
   align-items: center;
   gap: 0;

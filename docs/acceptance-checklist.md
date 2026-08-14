@@ -25,8 +25,9 @@ person must exercise browser chrome.
   distinguishes the host tab and panel from outside targets.
 - [x] Compact-title truncation uses one period and removes trailing
   non-alphanumeric characters from the measured fitting prefix.
-- [x] Host groups flex-shrink from natural widths to control-aware minimums,
-  then retain stable allocated widths while their display titles are shortened.
+- [x] Host groups share title space evenly above their control-aware minimums,
+  redistribute space unused by short titles, and retain stable allocated widths
+  while their display titles are shortened.
 - [x] All shipped JavaScript passes Node syntax checking.
 - [x] All PowerShell files pass the PowerShell parser.
 - [x] Installer `-WhatIf` detects Firefox 153.0.4 and the correct current profile
@@ -58,7 +59,7 @@ person must exercise browser chrome.
 ## Needs a live Firefox restart smoke test
 
 Focused isolated Firefox probes have verified exact-host rendering, an adjacent
-new-tab button, adaptive shrinking before minimum-width overflow,
+new-tab button, fair adaptive shrinking before minimum-width overflow,
 singleton-count hiding, Home-before-count placement, foreground Home navigation
 to the origin root, and transient hover versus persistent click panel behavior.
 The remaining broader manual checks are:
