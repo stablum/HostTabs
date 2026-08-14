@@ -58,6 +58,26 @@ test("title truncation does not replace only one omitted character with a period
   assert.equal(truncateTitleToFit("X", value => value === "."), "");
 });
 
+test("title truncation preserves emoji prefixes as complete graphemes", () => {
+  const { truncateTitleToFit } = loadHostTabs();
+  const graphemeCount = value =>
+    Array.from(
+      new Intl.Segmenter(undefined, { granularity: "grapheme" }).segment(value)
+    ).length;
+
+  assert.equal(
+    truncateTitleToFit(
+      "🍓 🍓 🍓 (@iruletheworldmo) | XCancel - xcancel.com",
+      value => graphemeCount(value) <= 6
+    ),
+    "🍓 🍓 🍓."
+  );
+  assert.equal(
+    truncateTitleToFit("👩🏽‍💻 👩🏽‍💻 developer", value => graphemeCount(value) <= 2),
+    "👩🏽‍💻."
+  );
+});
+
 test("adaptive widths give equally controlled host tabs equal space", () => {
   const { allocateGroupWidths } = loadHostTabs();
 

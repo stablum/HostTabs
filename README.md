@@ -15,9 +15,10 @@ uses the site's favicon and the most recently accessed page title. The page
 count is omitted when only one page is open. A compact title shortened by at
 least two characters uses a single period instead of a wide ellipsis; replacing
 only one final character with a period is avoided. Spaces and punctuation
-immediately before a truncation period are removed.
+immediately before a truncation period are removed, while Unicode text and
+emoji are preserved as complete grapheme clusters.
 
-Version 0.1.13 targets and was source-verified against the Firefox installed on
+Version 0.1.14 targets and was source-verified against the Firefox installed on
 the development machine: desktop Firefox 153.0.4 on Windows 11.
 
 ## Host-tab controls
@@ -226,7 +227,7 @@ but a future Firefox update can require maintenance. See
 [`docs/firefox-internals.md`](docs/firefox-internals.md) for the exact installed
 revision and findings, and run diagnostics/repair after upgrades.
 
-Version 0.1.13 limitations:
+Version 0.1.14 limitations:
 
 - it intentionally fails open when Firefox's built-in vertical-tabs mode is
   active; disable vertical tabs to use the requested top-toolbar interface;

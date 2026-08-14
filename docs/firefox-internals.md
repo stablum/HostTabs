@@ -116,10 +116,13 @@ and the source tab's container.
 Compact titles are measured from their rendered DOM width after layout rather
 than approximated on a canvas or left to the browser's ellipsis marker. When
 truncation is necessary, the controller keeps the longest fitting prefix,
-removes trailing non-alphanumeric characters, and adds one period when at least
-two source characters are omitted. It does not replace a single omitted final
-character with a same-slot period. The full title remains available from the
-host control's tooltip and accessible label.
+removes trailing spacing, punctuation, and non-emoji symbols, and adds one
+period when at least two source graphemes are omitted. It does not replace a
+single omitted final grapheme with a same-slot period. Prefixes are segmented at
+Unicode grapheme boundaries; letters, numbers, and emoji count as meaningful
+trailing content, so emoji survive cleanup and joined or modified sequences are
+never split. The full title remains available from the host control's tooltip
+and accessible label.
 
 Each host group has a full-title natural width and a minimum calculated from its
 currently visible favicon, Home, counter, close control, and a small title

@@ -24,8 +24,10 @@ person must exercise browser chrome.
   persistent click still toggles closed, and transient pointer-leave handling
   distinguishes the host tab and panel from outside targets.
 - [x] Compact-title truncation uses rendered DOM measurements, removes trailing
-  non-alphanumeric characters from the fitting prefix, and does not replace one
-  omitted final character with a same-slot period.
+  spacing/punctuation from the fitting prefix, and does not replace one omitted
+  final grapheme with a same-slot period.
+- [x] Unicode title fitting preserves emoji prefixes and truncates only at
+  grapheme boundaries, including joined and skin-tone-modified emoji sequences.
 - [x] Host groups share title space evenly above their control-aware minimums,
   redistribute space unused by short titles, and retain stable allocated widths
   while their display titles are shortened.
@@ -63,7 +65,7 @@ person must exercise browser chrome.
 
 Focused isolated Firefox probes have verified exact-host rendering, an adjacent
 new-tab button, spare-space title expansion, fair adaptive shrinking before
-minimum-width overflow,
+minimum-width overflow, Unicode emoji-prefix truncation,
 singleton-count hiding, Home-before-count placement, foreground Home navigation
 to the origin root, and transient hover versus persistent click panel behavior.
 The remaining broader manual checks are:

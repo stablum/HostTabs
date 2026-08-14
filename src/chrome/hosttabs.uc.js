@@ -4,6 +4,12 @@
   root.HostTabs = root.HostTabs || {};
   const HTML_NS = "http://www.w3.org/1999/xhtml";
   const SVG_NS = "http://www.w3.org/2000/svg";
+  const TITLE_GRAPHEME_SEGMENTER =
+    typeof Intl !== "undefined" && typeof Intl.Segmenter === "function"
+      ? new Intl.Segmenter(undefined, { granularity: "grapheme" })
+      : null;
+  const MEANINGFUL_TITLE_GRAPHEME =
+    /[\p{L}\p{N}\p{Extended_Pictographic}\p{Emoji_Presentation}\p{Regional_Indicator}]/u;
 
   function html(doc, name, className = "") {
     const element = doc.createElementNS(HTML_NS, name);
@@ -13,30 +19,44 @@
     return element;
   }
 
+  function splitTitleGraphemes(value) {
+    if (TITLE_GRAPHEME_SEGMENTER) {
+      return Array.from(
+        TITLE_GRAPHEME_SEGMENTER.segment(value),
+        entry => entry.segment
+      );
+    }
+    return Array.from(value);
+  }
+
   function truncateTitleToFit(value, fits) {
     const title = typeof value === "string" ? value : String(value || "");
     if (!title || fits(title)) {
       return title;
     }
 
-    const characters = Array.from(title);
+    const graphemes = splitTitleGraphemes(title);
     const candidateAt = length => {
-      const prefix = characters
-        .slice(0, length)
-        .join("")
-        .replace(/[^\p{L}\p{N}]+$/gu, "");
-      const omitted = characters.length - Array.from(prefix).length;
+      const prefixGraphemes = graphemes.slice(0, length);
+      while (
+        prefixGraphemes.length &&
+        !MEANINGFUL_TITLE_GRAPHEME.test(prefixGraphemes.at(-1))
+      ) {
+        prefixGraphemes.pop();
+      }
+      const prefix = prefixGraphemes.join("");
+      const omitted = graphemes.length - prefixGraphemes.length;
       if (!prefix) {
         return omitted > 1 ? "." : "";
       }
-      // Replacing one final character with a period is not a useful visual
+      // Replacing one final grapheme with a period is not a useful visual
       // abbreviation: it occupies a character slot without exposing more of
       // the title. Reserve the marker for genuinely shortened prefixes.
       return omitted > 1 ? `${prefix}.` : prefix;
     };
-    let best = characters.length > 1 && fits(".") ? "." : "";
+    let best = graphemes.length > 1 && fits(".") ? "." : "";
     let low = 0;
-    let high = characters.length;
+    let high = graphemes.length;
     while (low <= high) {
       const middle = Math.floor((low + high) / 2);
       const candidate = candidateAt(middle);
