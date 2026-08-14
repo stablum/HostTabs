@@ -14,7 +14,7 @@ The exact hostname remains the grouping key and panel heading; the compact bar
 uses the site's favicon and the most recently accessed page title. The page
 count is omitted when only one page is open.
 
-Version 0.1.8 targets and was source-verified against the Firefox installed on
+Version 0.1.9 targets and was source-verified against the Firefox installed on
 the development machine: desktop Firefox 153.0.4 on Windows 11.
 
 ## Host-tab controls
@@ -29,7 +29,7 @@ Each web-host tab is arranged as:
 | --- | --- |
 | Favicon and title | For an inactive host, activates its most recently accessed page without opening the list. For the active host, toggles its page list. |
 | Home | Opens the last-accessed page's origin root (for example, `https://example.com/`) in a selected new tab. The scheme, non-default port, and Firefox container are preserved. It is omitted from special non-web groups. |
-| Page count | Shows the page list. It is omitted when the group contains one page. |
+| Page count | Hover to show a transient page list; it closes as soon as the pointer leaves both the host tab and list. Click to keep the list open until explicitly dismissed. Clicking the counter while its hover list is open makes the list persistent. The count is omitted when the group contains one page. |
 | `×` | Closes the current page in the active host, or the last-accessed page in an inactive host. Repeated clicks keep the button in place and work backward through recent pages. |
 | `+` | Opens Firefox's standard New Tab page. It stays immediately after the host tabs while the host strip scrolls independently when crowded. |
 
@@ -215,7 +215,7 @@ but a future Firefox update can require maintenance. See
 [`docs/firefox-internals.md`](docs/firefox-internals.md) for the exact installed
 revision and findings, and run diagnostics/repair after upgrades.
 
-Version 0.1.8 limitations:
+Version 0.1.9 limitations:
 
 - it intentionally fails open when Firefox's built-in vertical-tabs mode is
   active; disable vertical tabs to use the requested top-toolbar interface;
@@ -227,8 +227,9 @@ Version 0.1.8 limitations:
   mute, pin, duplicate, close, and Move Tab to New Window, but not every native
   extension-contributed or move-to-existing-window item;
 - focused live Firefox probes cover host grouping, control placement, the
-  adjacent `+` button, overflow scrolling, singleton-count hiding, and Home
-  navigation. The broader manual GUI scenarios listed below remain unchecked.
+  adjacent `+` button, overflow scrolling, singleton-count hiding,
+  hover-versus-click panel behavior, and Home navigation. The broader manual
+  GUI scenarios listed below remain unchecked.
 
 The manual smoke-test status is explicit in
 [`docs/acceptance-checklist.md`](docs/acceptance-checklist.md).

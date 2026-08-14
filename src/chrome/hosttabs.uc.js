@@ -25,6 +25,7 @@
       this.groups = [];
       this.openGroup = null;
       this.openingButton = null;
+      this.panelPersistent = false;
       this.closeLockLabel = null;
       this.renderFrame = 0;
       this.destroyed = false;
@@ -116,6 +117,9 @@
       this.pageList = html(this.doc, "div", "hosttabs-page-list");
       this.pageList.setAttribute("role", "listbox");
       this.panel.append(header, this.pageList);
+      this.panel.addEventListener("pointerleave", event =>
+        this.onHoverRegionLeave(this.openGroup, event.relatedTarget)
+      );
       this.doc.body.appendChild(this.panel);
 
       this.fallbackMenu = html(this.doc, "div", "hosttabs-fallback-menu");
@@ -253,6 +257,10 @@
       group.append(main, home, count, close);
       group._hosttabs = { main, icon, name, home, count, countValue, close };
 
+      group.addEventListener("pointerleave", event =>
+        this.onHoverRegionLeave(label, event.relatedTarget)
+      );
+
       main.addEventListener("click", () => this.activateGroup(label, main));
       main.addEventListener("auxclick", event => {
         if (event.button === 1) {
@@ -260,6 +268,7 @@
         }
       });
       home.addEventListener("click", () => this.openGroupHomepage(label));
+      count.addEventListener("pointerenter", () => this.openHoverPanel(label, count));
       count.addEventListener("click", () => this.togglePanel(label, count));
       count.addEventListener("keydown", event => {
         if (event.key === "Escape") {
@@ -387,22 +396,73 @@
 
     togglePanel(label, button) {
       if (this.openGroup === label && !this.panel.hidden) {
-        this.closePanel(true);
+        if (this.panelPersistent) {
+          this.closePanel(true);
+        } else {
+          // Clicking a panel that hover already opened promotes it to the
+          // existing persistent click behavior instead of toggling it closed.
+          this.panelPersistent = true;
+          this.openingButton = button;
+          this.schedulePanelLayout(true);
+        }
         return;
       }
+      this.openPanel(label, button, true, true);
+    }
+
+    openHoverPanel(label, button) {
+      if (this.panelPersistent) {
+        return;
+      }
+      if (this.openGroup === label && !this.panel.hidden) {
+        return;
+      }
+      this.openPanel(label, button, false, false);
+    }
+
+    openPanel(label, button, persistent, moveFocus) {
       this.openGroup = label;
       this.openingButton = button;
+      this.panelPersistent = persistent;
       this.renderGroupButtons();
       this.renderOpenGroup();
       this.panel.hidden = false;
       this.panel.setAttribute("aria-label", `${label} open tabs`);
       this.positionPanel();
+      this.schedulePanelLayout(moveFocus);
+    }
+
+    schedulePanelLayout(moveFocus) {
       this.win.requestAnimationFrame(() => {
+        if (this.panel.hidden) {
+          return;
+        }
         this.positionPanel();
-        const active = this.pageList.querySelector(".hosttabs-page-row.is-active");
-        (active || this.pageList.querySelector(".hosttabs-page-row"))?.focus();
-        active?.scrollIntoView({ block: "nearest" });
+        if (moveFocus) {
+          const active = this.pageList.querySelector(".hosttabs-page-row.is-active");
+          (active || this.pageList.querySelector(".hosttabs-page-row"))?.focus();
+          active?.scrollIntoView({ block: "nearest" });
+        }
       });
+    }
+
+    onHoverRegionLeave(label, relatedTarget) {
+      if (
+        this.panelPersistent ||
+        !label ||
+        this.openGroup !== label ||
+        this.panel.hidden
+      ) {
+        return;
+      }
+      const groupButton = this.groupButtons.get(label);
+      if (
+        this.panel.contains(relatedTarget) ||
+        groupButton?.contains(relatedTarget)
+      ) {
+        return;
+      }
+      this.closePanel();
     }
 
     renderOpenGroup() {
@@ -625,7 +685,9 @@
         margin,
         Math.min(anchor.left, this.win.innerWidth - width - margin)
       );
-      const top = Math.min(anchor.bottom + 2, this.win.innerHeight - 80);
+      // Touch the anchor so a pointer can enter a transient hover panel without
+      // crossing pixels that belong to neither the host tab nor the panel.
+      const top = Math.min(anchor.bottom, this.win.innerHeight - 80);
       this.panel.style.width = `${width}px`;
       this.panel.style.left = `${left}px`;
       this.panel.style.top = `${top}px`;
@@ -641,6 +703,7 @@
       this.fallbackMenu.hidden = true;
       this.openGroup = null;
       this.openingButton = null;
+      this.panelPersistent = false;
       for (const groupButton of this.groupButtons.values()) {
         groupButton._hosttabs.count.setAttribute("aria-expanded", "false");
         groupButton._hosttabs.main.setAttribute("aria-expanded", "false");
@@ -711,6 +774,7 @@
       this.groupButtons.clear();
       this.groups = [];
       this.closeLockLabel = null;
+      this.panelPersistent = false;
       this.log.info(`Destroyed (${reason}); Firefox native tabs restored`);
       this.onDestroy?.(this);
     }

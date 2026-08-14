@@ -105,10 +105,13 @@ tab selection and carries restored-session access information. HostTabs uses
 that value to choose the real tab activated by an inactive hostname-title
 click and to display that page's title/favicon. Clicking the active hostname
 title toggles its page list instead; the count toggles the list and is hidden
-for single-page groups. The currently selected tab wins if a timestamp is
-unavailable. For HTTP(S) groups, the Home control derives the origin root from
-that same tab and opens it through Firefox's trusted-tab API, preserving a
-non-default port and the source tab's container.
+for single-page groups. Hovering the count opens the same list transiently
+without moving keyboard focus; leaving both the host tab and panel closes only
+that transient form. Clicking it promotes the panel to the normal persistent
+click behavior. The currently selected tab wins if a timestamp is unavailable.
+For HTTP(S) groups, the Home control derives the origin root from that same tab
+and opens it through Firefox's trusted-tab API, preserving a non-default port
+and the source tab's container.
 
 The hostname close control closes that active tab, or the last-accessed tab for
 an inactive hostname. When it closes the active tab, HostTabs explicitly

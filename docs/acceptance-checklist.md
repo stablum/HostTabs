@@ -20,6 +20,9 @@ person must exercise browser chrome.
   rejects special non-web buckets.
 - [x] Homepage tabs use Firefox's trusted-tab API, open in the foreground, and
   preserve the source tab's container when present.
+- [x] Counter hover opens a transient panel, click promotes it to persistent,
+  persistent click still toggles closed, and transient pointer-leave handling
+  distinguishes the host tab and panel from outside targets.
 - [x] All shipped JavaScript passes Node syntax checking.
 - [x] All PowerShell files pass the PowerShell parser.
 - [x] Installer `-WhatIf` detects Firefox 153.0.4 and the correct current profile
@@ -52,8 +55,8 @@ person must exercise browser chrome.
 
 Focused isolated Firefox probes have verified exact-host rendering, an adjacent
 new-tab button with overflow scrolling, singleton-count hiding, Home-before-count
-placement, and foreground Home navigation to the origin root. The remaining
-broader manual checks are:
+placement, foreground Home navigation to the origin root, and transient hover
+versus persistent click panel behavior. The remaining broader manual checks are:
 
 - [ ] Restored session renders and the native strip disappears only after the
   custom strip appears.
