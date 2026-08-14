@@ -50,6 +50,14 @@ test("title truncation strips punctuation and spaces before its single period", 
   assert.equal(truncateTitleToFit("Ångström / more", value => value.length <= 9), "Ångström.");
 });
 
+test("title truncation does not replace only one omitted character with a period", () => {
+  const { truncateTitleToFit } = loadHostTabs();
+  const fits = value => value !== "New Tab" && value.length <= 7;
+
+  assert.equal(truncateTitleToFit("New Tab", fits), "New Ta");
+  assert.equal(truncateTitleToFit("X", value => value === "."), "");
+});
+
 test("adaptive widths give equally controlled host tabs equal space", () => {
   const { allocateGroupWidths } = loadHostTabs();
 

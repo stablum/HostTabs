@@ -1,6 +1,6 @@
 {
   "name": "hosttabs",
-  "version": "0.1.12",
+  "version": "0.1.13",
   "private": true,
   "description": "A privileged Firefox chrome customization that projects real tabs as hostname groups.",
   "scripts": {

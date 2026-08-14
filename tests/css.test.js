@@ -26,7 +26,7 @@ test("host tabs expose control-aware minimum widths to the fair allocator", () =
 
   assert.ok(rule, "host group CSS rule should exist");
   assert.match(rule[1], /flex:\s*0\s+0\s+auto\s*;/);
-  assert.match(rule[1], /max-width:\s*220px\s*;/);
+  assert.match(rule[1], /max-width:\s*none\s*;/);
   assert.match(rule[1], /min-width:\s*calc\(/);
   assert.match(css, /\.hosttabs-group\.has-icon\s*\{/);
   assert.match(css, /\.hosttabs-group\.has-home\s*\{/);

@@ -12,11 +12,12 @@ remain real Firefox tabs.
 
 The exact hostname remains the grouping key and panel heading; the compact bar
 uses the site's favicon and the most recently accessed page title. The page
-count is omitted when only one page is open, and a truncated compact title uses
-a single period instead of a wide ellipsis. Spaces and punctuation immediately
-before that period are removed.
+count is omitted when only one page is open. A compact title shortened by at
+least two characters uses a single period instead of a wide ellipsis; replacing
+only one final character with a period is avoided. Spaces and punctuation
+immediately before a truncation period are removed.
 
-Version 0.1.12 targets and was source-verified against the Firefox installed on
+Version 0.1.13 targets and was source-verified against the Firefox installed on
 the development machine: desktop Firefox 153.0.4 on Windows 11.
 
 ## Host-tab controls
@@ -35,11 +36,13 @@ Each web-host tab is arranged as:
 | `×` | Closes the current page in the active host, or the last-accessed page in an inactive host. Repeated clicks keep the button in place and work backward through recent pages. |
 | `+` | Opens Firefox's standard New Tab page. It stays immediately after the host tabs while the host strip scrolls independently when crowded. |
 
-Host tabs use their natural content width up to 220 px. As the toolbar fills,
-they share the available title space evenly above a control-aware minimum that
-retains the favicon, Home/count/close controls, and a small title marker. Tabs
-with short complete titles return their unused space to the others. Horizontal
-scrolling starts only after the visible host tabs have reached their minimums.
+Host tabs use the width needed by their complete titles while toolbar space is
+available; the previous hard 220 px ceiling no longer forces truncation beside
+unused space. When the full titles do not fit together, they share the available
+title space evenly above a control-aware minimum that retains the favicon,
+Home/count/close controls, and a small title allowance. Short complete titles
+return their unused share to longer titles. Horizontal scrolling starts only
+after the visible host tabs have reached their minimums.
 
 The page list shows each real tab's title and path plus its favicon, container,
 pin, and audio state where applicable. In the list:
@@ -223,7 +226,7 @@ but a future Firefox update can require maintenance. See
 [`docs/firefox-internals.md`](docs/firefox-internals.md) for the exact installed
 revision and findings, and run diagnostics/repair after upgrades.
 
-Version 0.1.12 limitations:
+Version 0.1.13 limitations:
 
 - it intentionally fails open when Firefox's built-in vertical-tabs mode is
   active; disable vertical tabs to use the requested top-toolbar interface;

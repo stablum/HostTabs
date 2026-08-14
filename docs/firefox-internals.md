@@ -113,20 +113,23 @@ For HTTP(S) groups, the Home control derives the origin root from that same tab
 and opens it through Firefox's trusted-tab API, preserving a non-default port
 and the source tab's container.
 
-Compact titles are measured after layout rather than relying on the browser's
-ellipsis marker. When truncation is necessary, the controller keeps the longest
-fitting prefix, removes trailing non-alphanumeric characters, and adds one
-period. The full title remains available from the host control's tooltip and
-accessible label.
+Compact titles are measured from their rendered DOM width after layout rather
+than approximated on a canvas or left to the browser's ellipsis marker. When
+truncation is necessary, the controller keeps the longest fitting prefix,
+removes trailing non-alphanumeric characters, and adds one period when at least
+two source characters are omitted. It does not replace a single omitted final
+character with a same-slot period. The full title remains available from the
+host control's tooltip and accessible label.
 
-Each host group has a natural width capped at 220 px and a minimum calculated
-from its currently visible favicon, Home, counter, close control, and a small
-title allowance. When the natural widths do not fit, the controller distributes
-the remaining title allowance equally above each group's control-aware minimum.
-A naturally short group is capped at its full-title width and returns unused
-space to longer groups. The controller locks those fair allocations before
-fitting display titles so shortened text cannot cause a second layout collapse.
-The strip scrolls only when the combined control-aware minimums no longer fit.
+Each host group has a full-title natural width and a minimum calculated from its
+currently visible favicon, Home, counter, close control, and a small title
+allowance. The strip grows into otherwise unused toolbar space until those
+natural widths fit. When they do not fit, the controller distributes the title
+allowance equally above each group's control-aware minimum. A naturally short
+group is capped at its full-title width and returns unused space to longer
+groups. The controller locks those fair allocations before fitting display
+titles so shortened text cannot cause a second layout collapse. The strip
+scrolls only when the combined control-aware minimums no longer fit.
 
 The hostname close control closes that active tab, or the last-accessed tab for
 an inactive hostname. When it closes the active tab, HostTabs explicitly

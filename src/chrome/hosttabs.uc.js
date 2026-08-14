@@ -25,9 +25,16 @@
         .slice(0, length)
         .join("")
         .replace(/[^\p{L}\p{N}]+$/gu, "");
-      return prefix ? `${prefix}.` : ".";
+      const omitted = characters.length - Array.from(prefix).length;
+      if (!prefix) {
+        return omitted > 1 ? "." : "";
+      }
+      // Replacing one final character with a period is not a useful visual
+      // abbreviation: it occupies a character slot without exposing more of
+      // the title. Reserve the marker for genuinely shortened prefixes.
+      return omitted > 1 ? `${prefix}.` : prefix;
     };
-    let best = fits(".") ? "." : "";
+    let best = characters.length > 1 && fits(".") ? "." : "";
     let low = 0;
     let high = characters.length;
     while (low <= high) {
@@ -116,7 +123,6 @@
       this.panelPersistent = false;
       this.closeLockLabel = null;
       this.renderFrame = 0;
-      this.titleMeasureContext = null;
       this.destroyed = false;
       this.draggedTab = null;
       this.removeTabListeners = null;
@@ -505,15 +511,6 @@
     }
 
     fitGroupTitles() {
-      if (!this.titleMeasureContext) {
-        const canvas = html(this.doc, "canvas");
-        this.titleMeasureContext = canvas.getContext("2d");
-      }
-      const context = this.titleMeasureContext;
-      if (!context) {
-        return;
-      }
-
       const buttons = Array.from(this.groupButtons.values()).filter(
         button => button.isConnected
       );
@@ -559,18 +556,12 @@
       for (const button of buttons) {
         const name = button._hosttabs.name;
         const fullTitle = name.dataset.fullTitle || "";
-        const availableWidth = name.clientWidth;
-        if (!availableWidth) {
+        if (!name.clientWidth) {
           continue;
         }
-        const style = this.win.getComputedStyle(name);
-        context.font = style.font || `${style.fontSize} ${style.fontFamily}`;
-        const letterSpacing = Number.parseFloat(style.letterSpacing);
         const fits = text => {
-          const spacing = Number.isFinite(letterSpacing)
-            ? Math.max(0, Array.from(text).length - 1) * letterSpacing
-            : 0;
-          return context.measureText(text).width + spacing <= availableWidth + 0.25;
+          name.textContent = text;
+          return name.scrollWidth <= name.clientWidth;
         };
         name.textContent = truncateTitleToFit(fullTitle, fits);
       }
@@ -957,7 +948,6 @@
       this.groups = [];
       this.closeLockLabel = null;
       this.panelPersistent = false;
-      this.titleMeasureContext = null;
       this.log.info(`Destroyed (${reason}); Firefox native tabs restored`);
       this.onDestroy?.(this);
     }
