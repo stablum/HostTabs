@@ -28,6 +28,10 @@ person must exercise browser chrome.
   final grapheme with a same-slot period.
 - [x] Unicode title fitting preserves emoji prefixes and truncates only at
   grapheme boundaries, including joined and skin-tone-modified emoji sequences.
+- [x] Host-tab context-menu targeting selects the group's last-accessed real tab
+  and retains the existing fallback if Firefox's native popup cannot open.
+- [x] Native context-menu invocation assigns the represented real tab to both
+  the host/page anchor and original event target before opening the popup.
 - [x] Host groups share title space evenly above their control-aware minimums,
   redistribute space unused by short titles, and retain stable allocated widths
   while their display titles are shortened.
@@ -65,7 +69,8 @@ person must exercise browser chrome.
 
 Focused isolated Firefox probes have verified exact-host rendering, an adjacent
 new-tab button, spare-space title expansion, fair adaptive shrinking before
-minimum-width overflow, Unicode emoji-prefix truncation,
+minimum-width overflow, Unicode emoji-prefix truncation, host-tab native
+context-menu targeting and the built-in Undo Close Tab entry,
 singleton-count hiding, Home-before-count placement, foreground Home navigation
 to the origin root, and transient hover versus persistent click panel behavior.
 The remaining broader manual checks are:
@@ -82,8 +87,8 @@ The remaining broader manual checks are:
 - [ ] Dynamic navigation migrates a row between hosts, including while its
   panel is open.
 - [ ] Two windows stay independent while receiving/moving tabs.
-- [ ] Native context menu opens from a custom row and its full set of commands,
-  extension contributions, containers, and multi-selection work.
+- [ ] Native context-menu extension contributions, containers, multi-selection,
+  and every command work from both a host tab and a custom row.
 - [ ] Pinned, audible/muted, container, lazy-restored, and hundreds-of-tabs
   scenarios render acceptably.
 - [ ] Deliberately breaking a required source file causes fail-open behavior.

@@ -111,6 +111,59 @@ test("adaptive widths preserve different control minimums and overflow safely", 
   );
 });
 
+test("host context menu targets the same last-accessed tab as its title", () => {
+  const controller = controllerStub();
+  const representedTab = {};
+  const olderTab = {};
+  const button = {};
+  const calls = [];
+  controller.groups = [
+    {
+      label: "example.com",
+      tabs: [{ tab: olderTab }, { tab: representedTab }],
+      lastAccessedTab: { tab: representedTab },
+    },
+  ];
+  controller.adapter = {
+    openNativeTabContextMenu(tab, anchor, event) {
+      calls.push({ tab, anchor, event });
+      return true;
+    },
+  };
+  controller.closePanel = () => calls.push("closed");
+  controller.openFallbackMenu = () => assert.fail("native context menu should open");
+  const event = {
+    preventDefault() {
+      calls.push("prevented");
+    },
+    stopPropagation() {
+      calls.push("stopped");
+    },
+  };
+
+  controller.openGroupContextMenu("example.com", button, event);
+
+  assert.equal(calls[0], "prevented");
+  assert.equal(calls[1], "stopped");
+  assert.equal(calls[2], "closed");
+  assert.deepEqual(calls[3], { tab: representedTab, anchor: button, event });
+});
+
+test("host context menu retains the existing fallback when Firefox rejects it", () => {
+  const controller = controllerStub();
+  const record = { tab: {} };
+  let fallback = null;
+  controller.groups = [{ label: "example.com", tabs: [record], lastAccessedTab: record }];
+  controller.adapter = { openNativeTabContextMenu: () => false };
+  controller.closePanel = () => {};
+  controller.openFallbackMenu = (target, event) => (fallback = { target, event });
+  const event = { preventDefault() {}, stopPropagation() {} };
+
+  controller.openGroupContextMenu("example.com", {}, event);
+
+  assert.deepEqual(fallback, { target: record, event });
+});
+
 test("hover opens a transient panel but never replaces a persistent panel", () => {
   const controller = controllerStub();
   const calls = [];

@@ -164,17 +164,21 @@ this.contextTabs = this.contextTab.multiselected
 
 Source: [tabbrowser.js](https://hg.mozilla.org/releases/mozilla-release/file/54be19de0e08edff0b797e55fd935dd3978b0a6d/browser/components/tabbrowser/content/tabbrowser.js#l10192).
 
-HostTabs assigns the real tab to the custom row and original event target's
-`tab` property and calls
+For a hostname control, HostTabs resolves the group's `lastAccessedTab`, the same
+real page represented and activated by the host title. For a page-list row it
+uses that row's real record. HostTabs assigns the resolved real tab to the host
+control or custom row and original event target's `tab` property and calls
 `openPopupAtScreen(..., true, originalContextMenuEvent)`. That preserves the
 trigger node, native multi-selection, extension-contributed menu items, and
-Firefox's current commands. In particular, `context_openTabInWindow` calls
+Firefox's current commands, including `context_undoCloseTab`. In particular,
+`context_openTabInWindow` calls
 `gBrowser.replaceTabsWithWindow(TabContextMenu.contextTab)` in the installed
 source. The installed revision's
 [XULPopupElement WebIDL](https://hg.mozilla.org/releases/mozilla-release/file/54be19de0e08edff0b797e55fd935dd3978b0a6d/dom/chrome-webidl/XULPopupElement.webidl#l89)
 defines that fourth argument as the trigger event and exposes the resulting
-read-only `triggerNode`. If native opening is unavailable or throws, HostTabs exposes a small
-fallback menu that explicitly includes **Move Tab to New Window**.
+read-only `triggerNode`. If native opening is unavailable or throws, HostTabs
+exposes a small fallback menu that explicitly includes **Move Tab to New
+Window**.
 
 ## Multi-selection and moving
 

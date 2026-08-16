@@ -109,3 +109,43 @@ test("homepage navigation falls back to Firefox's trusted link helper", () => {
     relatedToCurrent: true,
   });
 });
+
+test("native tab context menu receives the represented real tab as trigger context", () => {
+  const FirefoxAdapter = loadAdapter();
+  const tab = {};
+  const target = {};
+  const calls = [];
+  const menu = {
+    openPopupAtScreen(...args) {
+      calls.push(args);
+    },
+  };
+  const win = {
+    document: {
+      getElementById(id) {
+        return id === "tabContextMenu" ? menu : null;
+      },
+    },
+    gBrowser: {},
+    TabContextMenu: {},
+    mozInnerScreenX: 10,
+    mozInnerScreenY: 20,
+  };
+  const anchor = {
+    getBoundingClientRect() {
+      return { left: 30, top: 40 };
+    },
+  };
+  const event = { target, screenX: 100, screenY: 200 };
+
+  const opened = new FirefoxAdapter(win, logger).openNativeTabContextMenu(
+    tab,
+    anchor,
+    event
+  );
+
+  assert.equal(opened, true);
+  assert.equal(anchor.tab, tab);
+  assert.equal(target.tab, tab);
+  assert.deepEqual(calls, [[100, 200, true, event]]);
+});

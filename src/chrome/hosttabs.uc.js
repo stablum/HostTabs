@@ -390,6 +390,9 @@
       group.addEventListener("pointerleave", event =>
         this.onHoverRegionLeave(label, event.relatedTarget)
       );
+      group.addEventListener("contextmenu", event =>
+        this.openGroupContextMenu(label, group, event)
+      );
 
       main.addEventListener("click", () => this.activateGroup(label, main));
       main.addEventListener("auxclick", event => {
@@ -413,6 +416,21 @@
         }
       });
       return group;
+    }
+
+    openGroupContextMenu(label, button, event) {
+      event.preventDefault();
+      event.stopPropagation();
+      const group = this.groups.find(candidate => candidate.label === label);
+      const record = group?.lastAccessedTab || group?.tabs[0];
+      if (!record) {
+        return;
+      }
+
+      this.closePanel();
+      if (!this.adapter.openNativeTabContextMenu(record.tab, button, event)) {
+        this.openFallbackMenu(record, event);
+      }
     }
 
     activateGroup(label, button) {
