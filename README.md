@@ -18,7 +18,7 @@ only one final character with a period is avoided. Spaces and punctuation
 immediately before a truncation period are removed, while Unicode text and
 emoji are preserved as complete grapheme clusters.
 
-Version 0.1.15 targets and was source-verified against the Firefox installed on
+Version 0.1.16 targets and was source-verified against the Firefox installed on
 the development machine: desktop Firefox 153.0.4 on Windows 11.
 
 ## Host-tab controls
@@ -31,7 +31,7 @@ Each web-host tab is arranged as:
 
 | Control | Behavior |
 | --- | --- |
-| Favicon and title | For an inactive host, activates its most recently accessed page without opening the list. For the active host, toggles its page list. |
+| Favicon and title | Click an inactive host to activate its most recently accessed page without opening the list; click the active host to toggle its page list. Drag this area left or right to move the host and all of its real page tabs as one stable block. |
 | Home | Opens the last-accessed page's origin root (for example, `https://example.com/`) in a selected new tab. The scheme, non-default port, and Firefox container are preserved. It is omitted from special non-web groups. |
 | Page count | Hover to show a transient page list; it closes as soon as the pointer leaves both the host tab and list. Click to keep the list open until explicitly dismissed. Clicking the counter while its hover list is open makes the list persistent. The count is omitted when the group contains one page. |
 | `×` | Closes the current page in the active host, or the last-accessed page in an inactive host. Repeated clicks keep the button in place and work backward through recent pages. |
@@ -68,6 +68,8 @@ pin, and audio state where applicable. In the list:
 - places the host controls in Firefox's normal `TabsToolbar` without removing
   Firefox View, All Tabs, title-bar spacers, or window controls;
 - derives all order and state from each window's own real `gBrowser.tabs`;
+- lets a host be dragged left or right by its title, moving every page in that
+  host together through Firefox's native tab-order API;
 - migrates a row automatically when its real tab navigates to another host;
 - preserves Firefox shortcuts, session restore, history, pinned state,
   containers, audio state, and native window ownership;
@@ -233,22 +235,23 @@ but a future Firefox update can require maintenance. See
 [`docs/firefox-internals.md`](docs/firefox-internals.md) for the exact installed
 revision and findings, and run diagnostics/repair after upgrades.
 
-Version 0.1.15 limitations:
+Version 0.1.16 limitations:
 
 - it intentionally fails open when Firefox's built-in vertical-tabs mode is
   active; disable vertical tabs to use the requested top-toolbar interface;
 - Ctrl+click real multi-selection is implemented; Shift range-selection is not;
-- custom drag-and-drop reorders within the current window. Cross-window and
-  drag-out behavior use Firefox's native context menu rather than imitating its
-  fragile drag protocol;
+- custom drag-and-drop reorders pages or complete host groups within the
+  current window. Firefox's native pinned/unpinned boundary is retained.
+  Cross-window and drag-out behavior use Firefox's native context menu rather
+  than imitating its fragile drag protocol;
 - if native context-menu invocation breaks, the fallback includes reload,
   mute, pin, duplicate, close, and Move Tab to New Window, but not every native
   extension-contributed or move-to-existing-window item;
 - focused live Firefox probes cover host grouping, control placement, the
   adjacent `+` button, fair adaptive shrinking and minimum-width overflow,
-  singleton-count hiding, host-tab native context-menu targeting,
-  hover-versus-click panel behavior, and Home navigation. The broader manual
-  GUI scenarios listed below remain unchecked.
+  singleton-count hiding, host-tab block dragging, native context-menu
+  targeting, hover-versus-click panel behavior, and Home navigation. The
+  broader manual GUI scenarios listed below remain unchecked.
 
 The manual smoke-test status is explicit in
 [`docs/acceptance-checklist.md`](docs/acceptance-checklist.md).

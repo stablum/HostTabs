@@ -11,6 +11,8 @@ person must exercise browser chrome.
   other `about:`, file, data, blob, extension, view-source, Reader View, unknown,
   and malformed inputs.
 - [x] Group and page ordering derives only from native tab positions.
+- [x] Host-group drag planning moves all represented real tabs as one stable
+  block, and the adapter applies the complete order through native `moveTabTo`.
 - [x] Hostname close planning selects the active tab or the inactive group's
   last-accessed tab, then identifies the previous visit.
 - [x] The new-tab adapter prefers `BrowserCommands.openTab()` and falls back to
@@ -72,7 +74,8 @@ new-tab button, spare-space title expansion, fair adaptive shrinking before
 minimum-width overflow, Unicode emoji-prefix truncation, host-tab native
 context-menu targeting and the built-in Undo Close Tab entry,
 singleton-count hiding, Home-before-count placement, foreground Home navigation
-to the origin root, and transient hover versus persistent click panel behavior.
+to the origin root, transient hover versus persistent click panel behavior, and
+stable multi-page host-block movement by dragging a compact host title.
 The remaining broader manual checks are:
 
 - [ ] Restored session renders and the native strip disappears only after the

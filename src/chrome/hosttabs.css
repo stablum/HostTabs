@@ -121,6 +121,23 @@
   gap: 6px;
   min-width: 0;
   padding: 0 4px 0 9px;
+  cursor: grab;
+}
+
+.hosttabs-group.is-dragging {
+  opacity: 0.52;
+}
+
+.hosttabs-group.is-dragging .hosttabs-group-main {
+  cursor: grabbing;
+}
+
+.hosttabs-group.drop-before {
+  box-shadow: inset 3px 0 var(--focus-outline-color, AccentColor);
+}
+
+.hosttabs-group.drop-after {
+  box-shadow: inset -3px 0 var(--focus-outline-color, AccentColor);
 }
 
 .hosttabs-group:hover,

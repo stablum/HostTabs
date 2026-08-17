@@ -111,6 +111,26 @@ test("adaptive widths preserve different control minimums and overflow safely", 
   );
 });
 
+test("host drag order moves every real page as one stable group block", () => {
+  const { buildGroupTabOrder } = loadHostTabs();
+  const [a1, a2, b1, c1, c2] = [{}, {}, {}, {}, {}];
+  const groups = [
+    { label: "a.example", tabs: [{ tab: a1 }, { tab: a2 }] },
+    { label: "b.example", tabs: [{ tab: b1 }] },
+    { label: "c.example", tabs: [{ tab: c1 }, { tab: c2 }] },
+  ];
+
+  assert.deepEqual(
+    Array.from(buildGroupTabOrder(groups, "c.example", "a.example", false)),
+    [c1, c2, a1, a2, b1]
+  );
+  assert.deepEqual(
+    Array.from(buildGroupTabOrder(groups, "a.example", "c.example", true)),
+    [b1, c1, c2, a1, a2]
+  );
+  assert.equal(buildGroupTabOrder(groups, "a.example", "a.example", false), null);
+});
+
 test("host context menu targets the same last-accessed tab as its title", () => {
   const controller = controllerStub();
   const representedTab = {};

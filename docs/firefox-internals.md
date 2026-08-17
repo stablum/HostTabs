@@ -188,9 +188,14 @@ Firefox 153 has `addToMultiSelectedTabs`, `removeFromMultiSelectedTabs`, and the
 HostTabs maps Ctrl+click to those real APIs. It does not emulate selection.
 
 Within one hostname panel, drag-to-row calls Firefox's `moveTabTo` to reorder
-the real tab. Cross-window movement and detaching are intentionally delegated
-to the native context menu; duplicating Firefox's internal drag data structures
-would be substantially more fragile.
+the real tab. Dragging a compact host title computes the new group order,
+flattens every group's existing real tabs without changing their internal
+order, and applies that complete order through the same native API. Because
+the underlying objects move, session restore, keyboard traversal, and later
+model reconciliation all see the new order. Firefox's native pinned/unpinned
+boundary remains authoritative. Cross-window movement and detaching are
+intentionally delegated to the native context menu; duplicating Firefox's
+internal drag data structures would be substantially more fragile.
 
 ## AutoConfig
 

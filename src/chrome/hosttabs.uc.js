@@ -125,8 +125,31 @@
     return allocations;
   }
 
+  function buildGroupTabOrder(groups, draggedLabel, targetLabel, placeAfter) {
+    const draggedIndex = groups.findIndex(group => group.label === draggedLabel);
+    const targetIndex = groups.findIndex(group => group.label === targetLabel);
+    if (draggedIndex < 0 || targetIndex < 0 || draggedIndex === targetIndex) {
+      return null;
+    }
+
+    const reorderedGroups = groups.slice();
+    const [draggedGroup] = reorderedGroups.splice(draggedIndex, 1);
+    const adjustedTargetIndex = reorderedGroups.findIndex(
+      group => group.label === targetLabel
+    );
+    reorderedGroups.splice(
+      adjustedTargetIndex + (placeAfter ? 1 : 0),
+      0,
+      draggedGroup
+    );
+    return reorderedGroups.flatMap(group =>
+      group.tabs.map(record => record.tab).filter(Boolean)
+    );
+  }
+
   root.HostTabs.truncateTitleToFit = truncateTitleToFit;
   root.HostTabs.allocateGroupWidths = allocateGroupWidths;
+  root.HostTabs.buildGroupTabOrder = buildGroupTabOrder;
 
   class HostTabsController {
     constructor(win, cssText, logger, onDestroy) {
@@ -145,6 +168,8 @@
       this.renderFrame = 0;
       this.destroyed = false;
       this.draggedTab = null;
+      this.draggedGroupLabel = null;
+      this.groupDropTarget = null;
       this.removeTabListeners = null;
       this.boundOutsidePointer = event => this.onOutsidePointer(event);
       this.boundEscape = event => this.onWindowKeyDown(event);
@@ -357,6 +382,7 @@
       const name = html(this.doc, "span", "hosttabs-group-name");
       const main = html(this.doc, "button", "hosttabs-group-main");
       main.type = "button";
+      main.draggable = true;
       main.setAttribute("aria-haspopup", "dialog");
       main.setAttribute("aria-controls", "hosttabs-panel");
       main.append(icon, name);
@@ -393,6 +419,19 @@
       group.addEventListener("contextmenu", event =>
         this.openGroupContextMenu(label, group, event)
       );
+      group.addEventListener("dragstart", event =>
+        this.onGroupDragStart(event, label, group)
+      );
+      group.addEventListener("dragover", event =>
+        this.onGroupDragOver(event, label, group)
+      );
+      group.addEventListener("dragleave", event =>
+        this.onGroupDragLeave(event, label, group)
+      );
+      group.addEventListener("drop", event =>
+        this.onGroupDrop(event, label, group)
+      );
+      group.addEventListener("dragend", () => this.onGroupDragEnd());
 
       main.addEventListener("click", () => this.activateGroup(label, main));
       main.addEventListener("auxclick", event => {
@@ -416,6 +455,90 @@
         }
       });
       return group;
+    }
+
+    onGroupDragStart(event, label, button) {
+      if (
+        event.target?.closest?.(
+          ".hosttabs-group-home, .hosttabs-group-count, .hosttabs-group-close"
+        )
+      ) {
+        event.preventDefault();
+        return;
+      }
+      this.closePanel();
+      if (!event.dataTransfer) {
+        event.preventDefault();
+        return;
+      }
+      this.draggedGroupLabel = label;
+      button.classList.add("is-dragging");
+      event.dataTransfer.effectAllowed = "move";
+      event.dataTransfer.setData("text/plain", `hosttabs-group:${label}`);
+    }
+
+    onGroupDragOver(event, label, button) {
+      if (!this.draggedGroupLabel || this.draggedGroupLabel === label) {
+        return;
+      }
+      event.preventDefault();
+      if (event.dataTransfer) {
+        event.dataTransfer.dropEffect = "move";
+      }
+      const rect = button.getBoundingClientRect();
+      const placeAfter = event.clientX >= rect.left + rect.width / 2;
+      this.clearGroupDropIndicators();
+      button.classList.add(placeAfter ? "drop-after" : "drop-before");
+      this.groupDropTarget = { label, placeAfter };
+    }
+
+    onGroupDragLeave(event, label, button) {
+      if (event.relatedTarget && button.contains(event.relatedTarget)) {
+        return;
+      }
+      button.classList.remove("drop-before", "drop-after");
+      if (this.groupDropTarget?.label === label) {
+        this.groupDropTarget = null;
+      }
+    }
+
+    onGroupDrop(event, label, button) {
+      if (!this.draggedGroupLabel || this.draggedGroupLabel === label) {
+        return;
+      }
+      event.preventDefault();
+      event.stopPropagation();
+      const target = this.groupDropTarget;
+      const rect = button.getBoundingClientRect();
+      const placeAfter =
+        target?.label === label
+          ? target.placeAfter
+          : event.clientX >= rect.left + rect.width / 2;
+      const orderedTabs = buildGroupTabOrder(
+        this.groups,
+        this.draggedGroupLabel,
+        label,
+        placeAfter
+      );
+      this.onGroupDragEnd();
+      if (orderedTabs) {
+        this.adapter.reorderTabs(orderedTabs);
+      }
+    }
+
+    onGroupDragEnd() {
+      this.draggedGroupLabel = null;
+      this.groupDropTarget = null;
+      this.clearGroupDropIndicators();
+      for (const button of this.groupButtons.values()) {
+        button.classList.remove("is-dragging");
+      }
+    }
+
+    clearGroupDropIndicators() {
+      for (const button of this.groupButtons.values()) {
+        button.classList.remove("drop-before", "drop-after");
+      }
     }
 
     openGroupContextMenu(label, button, event) {
@@ -986,6 +1109,8 @@
       this.groups = [];
       this.closeLockLabel = null;
       this.panelPersistent = false;
+      this.draggedGroupLabel = null;
+      this.groupDropTarget = null;
       this.log.info(`Destroyed (${reason}); Firefox native tabs restored`);
       this.onDestroy?.(this);
     }

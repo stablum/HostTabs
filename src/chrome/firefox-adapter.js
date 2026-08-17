@@ -211,6 +211,18 @@
       this.gBrowser.moveTabTo(tab, this.getTabPosition(targetTab));
     }
 
+    reorderTabs(tabs) {
+      if (typeof this.gBrowser.moveTabTo !== "function") {
+        return false;
+      }
+      tabs.forEach((tab, index) => {
+        if (tab && this.getTabPosition(tab) !== index) {
+          this.gBrowser.moveTabTo(tab, index);
+        }
+      });
+      return true;
+    }
+
     toggleMultiSelection(tab) {
       if (
         typeof this.gBrowser.addToMultiSelectedTabs !== "function" ||

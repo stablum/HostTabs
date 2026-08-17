@@ -149,3 +149,32 @@ test("native tab context menu receives the represented real tab as trigger conte
   assert.equal(target.tab, tab);
   assert.deepEqual(calls, [[100, 200, true, event]]);
 });
+
+test("host group reordering applies a complete real-tab order", () => {
+  const FirefoxAdapter = loadAdapter();
+  const tabs = [{ id: "a" }, { id: "b" }, { id: "c" }, { id: "d" }];
+  const moves = [];
+  const win = {
+    document: {},
+    gBrowser: {
+      tabs,
+      moveTabTo(tab, index) {
+        moves.push([tab.id, index]);
+        const current = tabs.indexOf(tab);
+        tabs.splice(current, 1);
+        tabs.splice(index, 0, tab);
+      },
+    },
+  };
+
+  const applied = new FirefoxAdapter(win, logger).reorderTabs([
+    tabs[2],
+    tabs[3],
+    tabs[0],
+    tabs[1],
+  ]);
+
+  assert.equal(applied, true);
+  assert.deepEqual(tabs.map(tab => tab.id), ["c", "d", "a", "b"]);
+  assert.deepEqual(moves, [["c", 0], ["d", 1]]);
+});

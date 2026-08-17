@@ -32,3 +32,15 @@ test("host tabs expose control-aware minimum widths to the fair allocator", () =
   assert.match(css, /\.hosttabs-group\.has-home\s*\{/);
   assert.match(css, /\.hosttabs-group\.has-count\s*\{/);
 });
+
+test("host drag and drop has grab cursors and directional indicators", () => {
+  const css = fs.readFileSync(
+    path.join(__dirname, "../src/chrome/hosttabs.css"),
+    "utf8"
+  );
+
+  assert.match(css, /cursor:\s*grab\s*;/);
+  assert.match(css, /cursor:\s*grabbing\s*;/);
+  assert.match(css, /\.hosttabs-group\.drop-before\s*\{/);
+  assert.match(css, /\.hosttabs-group\.drop-after\s*\{/);
+});
