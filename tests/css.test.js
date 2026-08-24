@@ -44,3 +44,20 @@ test("host drag and drop has grab cursors and directional indicators", () => {
   assert.match(css, /\.hosttabs-group\.drop-before\s*\{/);
   assert.match(css, /\.hosttabs-group\.drop-after\s*\{/);
 });
+
+test("page rows retain their text column when a favicon is hidden", () => {
+  const css = fs.readFileSync(
+    path.join(__dirname, "../src/chrome/hosttabs.css"),
+    "utf8"
+  );
+  const row = Array.from(
+    css.matchAll(/\.hosttabs-page-row\s*\{([^}]*)\}/gs)
+  ).find(match => /display:\s*grid\s*;/.test(match[1]));
+
+  assert.ok(row, "page row CSS rule should exist");
+  assert.match(row[1], /grid-template-areas:\s*"icon text status close"\s*;/);
+  assert.match(css, /\.hosttabs-page-icon\s*\{[^}]*grid-area:\s*icon\s*;/s);
+  assert.match(css, /\.hosttabs-page-text\s*\{[^}]*grid-area:\s*text\s*;/s);
+  assert.match(css, /\.hosttabs-page-status\s*\{[^}]*grid-area:\s*status\s*;/s);
+  assert.match(css, /\.hosttabs-page-close\s*\{[^}]*grid-area:\s*close\s*;/s);
+});

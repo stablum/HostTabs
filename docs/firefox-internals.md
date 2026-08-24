@@ -113,6 +113,11 @@ For HTTP(S) groups, the Home control derives the origin root from that same tab
 and opens it through Firefox's trusted-tab API, preserving a non-default port
 and the source tab's container.
 
+Page-list rows use fixed named grid areas for the favicon, title/path, status,
+and close control. When an unavailable favicon is hidden with `display: none`,
+the remaining elements therefore keep their assigned columns instead of CSS
+Grid auto-placement shifting the title into the 20 px icon column.
+
 Compact titles are measured from their rendered DOM width after layout rather
 than approximated on a canvas or left to the browser's ellipsis marker. When
 truncation is necessary, the controller keeps the longest fitting prefix,

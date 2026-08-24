@@ -18,8 +18,8 @@ only one final character with a period is avoided. Spaces and punctuation
 immediately before a truncation period are removed, while Unicode text and
 emoji are preserved as complete grapheme clusters.
 
-Version 0.1.16 targets and was source-verified against the Firefox installed on
-the development machine: desktop Firefox 153.0.4 on Windows 11.
+Version 0.1.17 retains source verification against desktop Firefox 153.0.4 and
+was live-tested against desktop Firefox 154.0 on Windows 11.
 
 ## Host-tab controls
 
@@ -51,7 +51,8 @@ return their unused share to longer titles. Horizontal scrolling starts only
 after the visible host tabs have reached their minimums.
 
 The page list shows each real tab's title and path plus its favicon, container,
-pin, and audio state where applicable. In the list:
+pin, and audio state where applicable. A missing or failed favicon leaves its
+small icon slot empty without collapsing the title into that slot. In the list:
 
 - click or press **Enter**/**Space** to activate a page;
 - press **Arrow Up/Down**, **Home**, or **End** to move focus;
@@ -235,7 +236,7 @@ but a future Firefox update can require maintenance. See
 [`docs/firefox-internals.md`](docs/firefox-internals.md) for the exact installed
 revision and findings, and run diagnostics/repair after upgrades.
 
-Version 0.1.16 limitations:
+Version 0.1.17 limitations:
 
 - it intentionally fails open when Firefox's built-in vertical-tabs mode is
   active; disable vertical tabs to use the requested top-toolbar interface;
@@ -249,9 +250,10 @@ Version 0.1.16 limitations:
   extension-contributed or move-to-existing-window item;
 - focused live Firefox probes cover host grouping, control placement, the
   adjacent `+` button, fair adaptive shrinking and minimum-width overflow,
-  singleton-count hiding, host-tab block dragging, native context-menu
-  targeting, hover-versus-click panel behavior, and Home navigation. The
-  broader manual GUI scenarios listed below remain unchecked.
+  singleton-count hiding, full-width page rows without favicons, host-tab block
+  dragging, native context-menu targeting, hover-versus-click panel behavior,
+  and Home navigation. The broader manual GUI scenarios listed below remain
+  unchecked.
 
 The manual smoke-test status is explicit in
 [`docs/acceptance-checklist.md`](docs/acceptance-checklist.md).

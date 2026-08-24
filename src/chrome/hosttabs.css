@@ -354,6 +354,7 @@
 
 .hosttabs-page-row {
   display: grid;
+  grid-template-areas: "icon text status close";
   grid-template-columns: 20px minmax(0, 1fr) auto 28px;
   align-items: center;
   column-gap: 8px;
@@ -361,6 +362,10 @@
   padding: 6px;
   border-radius: 6px;
   cursor: default;
+}
+
+.hosttabs-page-icon {
+  grid-area: icon;
 }
 
 .hosttabs-page-row:hover {
@@ -378,6 +383,7 @@
 }
 
 .hosttabs-page-text {
+  grid-area: text;
   min-width: 0;
 }
 
@@ -400,6 +406,7 @@
 }
 
 .hosttabs-page-status {
+  grid-area: status;
   display: inline-flex;
   align-items: center;
   gap: 5px;
@@ -427,6 +434,7 @@
 }
 
 .hosttabs-page-close {
+  grid-area: close;
   opacity: 0.25;
   font-size: 18px;
 }

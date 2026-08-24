@@ -1,9 +1,10 @@
 # Acceptance checklist
 
 Legend: **automated** means exercised by repository tests; **source-verified**
-means checked against the exact installed Firefox 153.0.4 source; **needs live
-smoke test** means Firefox must be restarted with HostTabs installed and a
-person must exercise browser chrome.
+means checked against Firefox 153.0.4 source; **needs live smoke test** means
+Firefox must be restarted with HostTabs installed and a person must exercise
+browser chrome. Focused isolated probes also run against installed Firefox
+154.0.
 
 ## Automated and statically verified
 
@@ -39,9 +40,11 @@ person must exercise browser chrome.
   while their display titles are shortened.
 - [x] Full titles may grow past the former 220 px ceiling into unused toolbar
   space before any title is shortened, while `+` remains directly adjacent.
+- [x] Page-row icon, text, status, and close elements have fixed grid areas, so
+  hiding a missing favicon cannot move the title into the narrow icon column.
 - [x] All shipped JavaScript passes Node syntax checking.
 - [x] All PowerShell files pass the PowerShell parser.
-- [x] Installer `-WhatIf` detects Firefox 153.0.4 and the correct current profile
+- [x] Installer `-WhatIf` detects Firefox 154.0 and the correct current profile
   without writing anything.
 - [x] Diagnostic script detects the same installation/profile and reports the
   expected pre-install missing state.
@@ -69,13 +72,15 @@ person must exercise browser chrome.
 
 ## Needs a live Firefox restart smoke test
 
-Focused isolated Firefox probes have verified exact-host rendering, an adjacent
-new-tab button, spare-space title expansion, fair adaptive shrinking before
-minimum-width overflow, Unicode emoji-prefix truncation, host-tab native
+Focused isolated Firefox 154.0 probes have verified exact-host rendering, an
+adjacent new-tab button, spare-space title expansion, fair adaptive shrinking
+before minimum-width overflow, Unicode emoji-prefix truncation, host-tab native
 context-menu targeting and the built-in Undo Close Tab entry,
 singleton-count hiding, Home-before-count placement, foreground Home navigation
 to the origin root, transient hover versus persistent click panel behavior, and
-stable multi-page host-block movement by dragging a compact host title.
+stable multi-page host-block movement by dragging a compact host title. A live
+missing-favicon layout probe also verified that a 550 px row retains a 466 px
+text column rather than collapsing it to the 20 px icon slot.
 The remaining broader manual checks are:
 
 - [ ] Restored session renders and the native strip disappears only after the
