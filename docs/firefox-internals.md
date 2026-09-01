@@ -15,6 +15,10 @@ this Windows 11 machine:
 The implementation deliberately keeps all findings below behind
 `firefox-adapter.js` or the AutoConfig bootstrap.
 
+A focused compatibility pass on 2026-09-01 also exercised installed Firefox
+154.0.1 (build `20260824154132`, source revision
+`8b532c2140db30c193436254a61ce964e7d2a121`).
+
 ## Browser window and toolbar
 
 The browser window document remains `chrome://browser/content/browser.xhtml`.
@@ -184,6 +188,15 @@ defines that fourth argument as the trigger event and exposes the resulting
 read-only `triggerNode`. If native opening is unavailable or throws, HostTabs
 exposes a small fallback menu that explicitly includes **Move Tab to New
 Window**.
+
+Firefox 154.0.1 keeps 41 native menu strings in `data-lazy-l10n-id` attributes
+until a native tab surface calls `gBrowser.translateTabContextMenu()`. That
+method loads `browser/tabContextMenu.ftl`, moves those identifiers to
+`data-l10n-id`, and is idempotent. HostTabs now calls it immediately before
+`openPopupAtScreen`; if initialization throws, it returns to the existing
+fallback instead of displaying blank native entries. A focused live probe
+opened the popup through a HostTabs title and found no visible blank items and
+no remaining lazy localization identifiers.
 
 ## Multi-selection and moving
 

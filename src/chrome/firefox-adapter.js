@@ -244,7 +244,7 @@
         return false;
       }
 
-      // Firefox 153's TabContextMenu.updateContextMenu reads
+      // Firefox 153+'s TabContextMenu.updateContextMenu reads
       // popup.triggerNode.tab before falling back to the selected tab. Passing
       // the original contextmenu event makes its target the trigger node.
       row.tab = tab;
@@ -255,6 +255,12 @@
       const screenX = event.screenX || this.win.mozInnerScreenX + rect.left + 16;
       const screenY = event.screenY || this.win.mozInnerScreenY + rect.top + 16;
       try {
+        // Firefox 154 lazily localizes most native tab-context-menu entries.
+        // Native tab surfaces call this before opening the shared popup; custom
+        // trigger nodes must do the same or those entries render without text.
+        if (typeof this.gBrowser.translateTabContextMenu === "function") {
+          this.gBrowser.translateTabContextMenu();
+        }
         menu.openPopupAtScreen(screenX, screenY, true, event);
         return true;
       } catch (error) {

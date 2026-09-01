@@ -4,7 +4,7 @@ Legend: **automated** means exercised by repository tests; **source-verified**
 means checked against Firefox 153.0.4 source; **needs live smoke test** means
 Firefox must be restarted with HostTabs installed and a person must exercise
 browser chrome. Focused isolated probes also run against installed Firefox
-154.0.
+154.0.1.
 
 ## Automated and statically verified
 
@@ -35,6 +35,8 @@ browser chrome. Focused isolated probes also run against installed Firefox
   and retains the existing fallback if Firefox's native popup cannot open.
 - [x] Native context-menu invocation assigns the represented real tab to both
   the host/page anchor and original event target before opening the popup.
+- [x] Native context-menu invocation runs Firefox's lazy localization
+  initializer before opening and uses the existing fallback if it throws.
 - [x] Host groups share title space evenly above their control-aware minimums,
   redistribute space unused by short titles, and retain stable allocated widths
   while their display titles are shortened.
@@ -44,7 +46,7 @@ browser chrome. Focused isolated probes also run against installed Firefox
   hiding a missing favicon cannot move the title into the narrow icon column.
 - [x] All shipped JavaScript passes Node syntax checking.
 - [x] All PowerShell files pass the PowerShell parser.
-- [x] Installer `-WhatIf` detects Firefox 154.0 and the correct current profile
+- [x] Installer `-WhatIf` detects Firefox 154.0.1 and the correct current profile
   without writing anything.
 - [x] Diagnostic script detects the same installation/profile and reports the
   expected pre-install missing state.
@@ -72,10 +74,11 @@ browser chrome. Focused isolated probes also run against installed Firefox
 
 ## Needs a live Firefox restart smoke test
 
-Focused isolated Firefox 154.0 probes have verified exact-host rendering, an
+Focused isolated Firefox 154.0.1 probes have verified exact-host rendering, an
 adjacent new-tab button, spare-space title expansion, fair adaptive shrinking
 before minimum-width overflow, Unicode emoji-prefix truncation, host-tab native
-context-menu targeting and the built-in Undo Close Tab entry,
+context-menu targeting, complete visible labels, and the built-in Undo Close
+Tab entry,
 singleton-count hiding, Home-before-count placement, foreground Home navigation
 to the origin root, transient hover versus persistent click panel behavior, and
 stable multi-page host-block movement by dragging a compact host title. A live

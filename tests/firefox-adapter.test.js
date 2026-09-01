@@ -117,7 +117,7 @@ test("native tab context menu receives the represented real tab as trigger conte
   const calls = [];
   const menu = {
     openPopupAtScreen(...args) {
-      calls.push(args);
+      calls.push(["open", ...args]);
     },
   };
   const win = {
@@ -126,7 +126,11 @@ test("native tab context menu receives the represented real tab as trigger conte
         return id === "tabContextMenu" ? menu : null;
       },
     },
-    gBrowser: {},
+    gBrowser: {
+      translateTabContextMenu() {
+        calls.push(["translate"]);
+      },
+    },
     TabContextMenu: {},
     mozInnerScreenX: 10,
     mozInnerScreenY: 20,
@@ -147,7 +151,46 @@ test("native tab context menu receives the represented real tab as trigger conte
   assert.equal(opened, true);
   assert.equal(anchor.tab, tab);
   assert.equal(target.tab, tab);
-  assert.deepEqual(calls, [[100, 200, true, event]]);
+  assert.deepEqual(calls, [
+    ["translate"],
+    ["open", 100, 200, true, event],
+  ]);
+});
+
+test("native tab context menu falls back when lazy localization fails", () => {
+  const FirefoxAdapter = loadAdapter();
+  let opened = false;
+  const win = {
+    document: {
+      getElementById() {
+        return {
+          openPopupAtScreen() {
+            opened = true;
+          },
+        };
+      },
+    },
+    gBrowser: {
+      translateTabContextMenu() {
+        throw new Error("localization unavailable");
+      },
+    },
+    TabContextMenu: {},
+  };
+  const anchor = {
+    getBoundingClientRect() {
+      return { left: 0, top: 0 };
+    },
+  };
+
+  const nativeOpened = new FirefoxAdapter(win, logger).openNativeTabContextMenu(
+    {},
+    anchor,
+    { target: {}, screenX: 1, screenY: 1 }
+  );
+
+  assert.equal(nativeOpened, false);
+  assert.equal(opened, false);
 });
 
 test("host group reordering applies a complete real-tab order", () => {
