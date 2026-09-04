@@ -35,8 +35,9 @@ browser chrome. Focused isolated probes also run against installed Firefox
   and retains the existing fallback if Firefox's native popup cannot open.
 - [x] Native context-menu invocation assigns the represented real tab to both
   the host/page anchor and original event target before opening the popup.
-- [x] Native context-menu invocation runs Firefox's lazy localization
-  initializer before opening and uses the existing fallback if it throws.
+- [x] Native context-menu invocation initializes Firefox's lazy strings,
+  arranges the selected classic/alternate layout, awaits its final localized
+  labels before opening, and uses the existing fallback if that process throws.
 - [x] Host groups share title space evenly above their control-aware minimums,
   redistribute space unused by short titles, and retain stable allocated widths
   while their display titles are shortened.
@@ -77,13 +78,13 @@ browser chrome. Focused isolated probes also run against installed Firefox
 Focused isolated Firefox 154.0.1 probes have verified exact-host rendering, an
 adjacent new-tab button, spare-space title expansion, fair adaptive shrinking
 before minimum-width overflow, Unicode emoji-prefix truncation, host-tab native
-context-menu targeting, complete visible labels, and the built-in Undo Close
-Tab entry,
-singleton-count hiding, Home-before-count placement, foreground Home navigation
-to the origin root, transient hover versus persistent click panel behavior, and
-stable multi-page host-block movement by dragging a compact host title. A live
-missing-favicon layout probe also verified that a 550 px row retains a 466 px
-text column rather than collapsing it to the 20 px icon slot.
+context-menu targeting, complete visible labels in both native menu layouts,
+the built-in Undo Close Tab entry, singleton-count hiding, Home-before-count
+placement, foreground Home navigation to the origin root, transient hover
+versus persistent click panel behavior, and stable multi-page host-block
+movement by dragging a compact host title. A live missing-favicon layout probe
+also verified that a 550 px row retains a 466 px text column rather than
+collapsing it to the 20 px icon slot.
 The remaining broader manual checks are:
 
 - [ ] Restored session renders and the native strip disappears only after the

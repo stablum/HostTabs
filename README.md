@@ -18,7 +18,7 @@ only one final character with a period is avoided. Spaces and punctuation
 immediately before a truncation period are removed, while Unicode text and
 emoji are preserved as complete grapheme clusters.
 
-Version 0.1.18 retains source verification against desktop Firefox 153.0.4 and
+Version 0.1.19 retains source verification against desktop Firefox 153.0.4 and
 was live-tested against desktop Firefox 154.0.1 on Windows 11.
 
 ## Host-tab controls
@@ -41,8 +41,9 @@ Right-click anywhere on a host tab to open Firefox's native tab context menu for
 the same real page represented by its title. This includes Firefox's own Undo
 Close Tab, reload, mute, pin, duplicate, move, container, close, and contributed
 extension commands.
-On Firefox versions that lazily load these menu strings, HostTabs calls
-Firefox's native tab-menu localization initializer before opening the popup.
+On Firefox versions that lazily load these menu strings, HostTabs initializes
+them, arranges the active classic or alternate menu layout, and waits for its
+final localized labels before opening the popup.
 
 Host tabs use the width needed by their complete titles while toolbar space is
 available; the previous hard 220 px ceiling no longer forces truncation beside
@@ -238,7 +239,7 @@ but a future Firefox update can require maintenance. See
 [`docs/firefox-internals.md`](docs/firefox-internals.md) for the exact installed
 revision and findings, and run diagnostics/repair after upgrades.
 
-Version 0.1.18 limitations:
+Version 0.1.19 limitations:
 
 - it intentionally fails open when Firefox's built-in vertical-tabs mode is
   active; disable vertical tabs to use the requested top-toolbar interface;
@@ -253,7 +254,8 @@ Version 0.1.18 limitations:
 - focused live Firefox probes cover host grouping, control placement, the
   adjacent `+` button, fair adaptive shrinking and minimum-width overflow,
   singleton-count hiding, full-width page rows without favicons, host-tab block
-  dragging, complete native context-menu localization and targeting,
+  dragging, complete native context-menu localization and targeting in both
+  Firefox menu layouts,
   hover-versus-click panel behavior, and Home navigation. The broader manual
   GUI scenarios listed below remain unchecked.
 

@@ -541,7 +541,7 @@
       }
     }
 
-    openGroupContextMenu(label, button, event) {
+    async openGroupContextMenu(label, button, event) {
       event.preventDefault();
       event.stopPropagation();
       const group = this.groups.find(candidate => candidate.label === label);
@@ -551,7 +551,7 @@
       }
 
       this.closePanel();
-      if (!this.adapter.openNativeTabContextMenu(record.tab, button, event)) {
+      if (!(await this.adapter.openNativeTabContextMenu(record.tab, button, event))) {
         this.openFallbackMenu(record, event);
       }
     }
@@ -902,10 +902,10 @@
           this.adapter.closeTab(record.tab);
         }
       });
-      row.addEventListener("contextmenu", event => {
+      row.addEventListener("contextmenu", async event => {
         event.preventDefault();
         event.stopPropagation();
-        if (!this.adapter.openNativeTabContextMenu(record.tab, row, event)) {
+        if (!(await this.adapter.openNativeTabContextMenu(record.tab, row, event))) {
           this.openFallbackMenu(record, event);
         }
       });

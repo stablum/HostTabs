@@ -110,7 +110,7 @@ test("homepage navigation falls back to Firefox's trusted link helper", () => {
   });
 });
 
-test("native tab context menu receives the represented real tab as trigger context", () => {
+test("native tab context menu receives the represented real tab as trigger context", async () => {
   const FirefoxAdapter = loadAdapter();
   const tab = {};
   const target = {};
@@ -122,6 +122,11 @@ test("native tab context menu receives the represented real tab as trigger conte
   };
   const win = {
     document: {
+      l10n: {
+        async translateFragment(fragment) {
+          calls.push(["localize", fragment]);
+        },
+      },
       getElementById(id) {
         return id === "tabContextMenu" ? menu : null;
       },
@@ -142,7 +147,11 @@ test("native tab context menu receives the represented real tab as trigger conte
   };
   const event = { target, screenX: 100, screenY: 200 };
 
-  const opened = new FirefoxAdapter(win, logger).openNativeTabContextMenu(
+  win.TabContextMenu._ensureMenuArranged = popup => {
+    calls.push(["arrange", popup]);
+  };
+
+  const opened = await new FirefoxAdapter(win, logger).openNativeTabContextMenu(
     tab,
     anchor,
     event
@@ -153,11 +162,13 @@ test("native tab context menu receives the represented real tab as trigger conte
   assert.equal(target.tab, tab);
   assert.deepEqual(calls, [
     ["translate"],
+    ["arrange", menu],
+    ["localize", menu],
     ["open", 100, 200, true, event],
   ]);
 });
 
-test("native tab context menu falls back when lazy localization fails", () => {
+test("native tab context menu falls back when lazy localization fails", async () => {
   const FirefoxAdapter = loadAdapter();
   let opened = false;
   const win = {
@@ -183,7 +194,7 @@ test("native tab context menu falls back when lazy localization fails", () => {
     },
   };
 
-  const nativeOpened = new FirefoxAdapter(win, logger).openNativeTabContextMenu(
+  const nativeOpened = await new FirefoxAdapter(win, logger).openNativeTabContextMenu(
     {},
     anchor,
     { target: {}, screenX: 1, screenY: 1 }

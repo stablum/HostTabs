@@ -18,6 +18,7 @@ The implementation deliberately keeps all findings below behind
 A focused compatibility pass on 2026-09-01 also exercised installed Firefox
 154.0.1 (build `20260824154132`, source revision
 `8b532c2140db30c193436254a61ce964e7d2a121`).
+The alternate native tab-context-menu layout was rechecked live on 2026-09-04.
 
 ## Browser window and toolbar
 
@@ -192,11 +193,18 @@ Window**.
 Firefox 154.0.1 keeps 41 native menu strings in `data-lazy-l10n-id` attributes
 until a native tab surface calls `gBrowser.translateTabContextMenu()`. That
 method loads `browser/tabContextMenu.ftl`, moves those identifiers to
-`data-l10n-id`, and is idempotent. HostTabs now calls it immediately before
-`openPopupAtScreen`; if initialization throws, it returns to the existing
-fallback instead of displaying blank native entries. A focused live probe
-opened the popup through a HostTabs title and found no visible blank items and
-no remaining lazy localization identifiers.
+`data-l10n-id`, and is idempotent. Firefox's optional alternate menu structure
+then rearranges the popup and changes several of those IDs to their
+`data-alt-l10n-id` values. If this happens only in `popupshowing`, the new labels
+can miss the popup's first rendering and appear blank.
+
+HostTabs therefore initializes the lazy strings, asks
+`TabContextMenu._ensureMenuArranged()` to select the current layout, awaits
+`document.l10n.translateFragment()` for that final menu, and only then calls
+`openPopupAtScreen`. Any failure returns to the existing fallback. A focused
+live probe enabled the alternate layout, opened the popup through a HostTabs
+title, and found no visible blank items and no remaining lazy localization
+identifiers.
 
 ## Multi-selection and moving
 
@@ -238,7 +246,8 @@ after a Firefox chrome refactor:
   `tabbrowser-tabs`, `tabContextMenu`;
 - `gBrowser`, `tabContainer`, `linkedBrowser.currentURI`, and `_tPos`;
 - tab custom events and `addTabsProgressListener`;
-- `TabContextMenu` trigger-node behavior and `openPopupAtScreen`;
+- `TabContextMenu` trigger-node/layout behavior, Fluent fragment translation,
+  and `openPopupAtScreen`;
 - real-tab commands such as `removeTab`, `moveTabTo`,
   `replaceTabsWithWindow`, multi-selection, and `toggleMuteAudio`.
 

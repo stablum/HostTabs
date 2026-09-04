@@ -131,7 +131,7 @@ test("host drag order moves every real page as one stable group block", () => {
   assert.equal(buildGroupTabOrder(groups, "a.example", "a.example", false), null);
 });
 
-test("host context menu targets the same last-accessed tab as its title", () => {
+test("host context menu targets the same last-accessed tab as its title", async () => {
   const controller = controllerStub();
   const representedTab = {};
   const olderTab = {};
@@ -161,7 +161,7 @@ test("host context menu targets the same last-accessed tab as its title", () => 
     },
   };
 
-  controller.openGroupContextMenu("example.com", button, event);
+  await controller.openGroupContextMenu("example.com", button, event);
 
   assert.equal(calls[0], "prevented");
   assert.equal(calls[1], "stopped");
@@ -169,7 +169,7 @@ test("host context menu targets the same last-accessed tab as its title", () => 
   assert.deepEqual(calls[3], { tab: representedTab, anchor: button, event });
 });
 
-test("host context menu retains the existing fallback when Firefox rejects it", () => {
+test("host context menu retains the existing fallback when Firefox rejects it", async () => {
   const controller = controllerStub();
   const record = { tab: {} };
   let fallback = null;
@@ -179,7 +179,7 @@ test("host context menu retains the existing fallback when Firefox rejects it", 
   controller.openFallbackMenu = (target, event) => (fallback = { target, event });
   const event = { preventDefault() {}, stopPropagation() {} };
 
-  controller.openGroupContextMenu("example.com", {}, event);
+  await controller.openGroupContextMenu("example.com", {}, event);
 
   assert.deepEqual(fallback, { target: record, event });
 });

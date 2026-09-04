@@ -238,7 +238,7 @@
       return true;
     }
 
-    openNativeTabContextMenu(tab, row, event) {
+    async openNativeTabContextMenu(tab, row, event) {
       const menu = this.doc.getElementById("tabContextMenu");
       if (!menu || typeof menu.openPopupAtScreen !== "function" || !this.win.TabContextMenu) {
         return false;
@@ -260,6 +260,15 @@
         // trigger nodes must do the same or those entries render without text.
         if (typeof this.gBrowser.translateTabContextMenu === "function") {
           this.gBrowser.translateTabContextMenu();
+        }
+        // Firefox's alternate menu structure changes several localization IDs
+        // during popupshowing. Arrange it before the popup is measured, then
+        // wait until Fluent has populated both the classic and alternate IDs.
+        if (typeof this.win.TabContextMenu._ensureMenuArranged === "function") {
+          this.win.TabContextMenu._ensureMenuArranged(menu);
+        }
+        if (typeof this.doc.l10n?.translateFragment === "function") {
+          await this.doc.l10n.translateFragment(menu);
         }
         menu.openPopupAtScreen(screenX, screenY, true, event);
         return true;
